@@ -1,0 +1,25 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build --preset=cloudflare_module",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.12",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@vueuse/core": "^10.11.0",
+    "@vueuse/nuxt": "^10.11.0",
+    "nuxt": "^3.12.4",
+    "sass": "^1.77.8",
+    "sass-loader": "^16.0.0",
+    "wrangler": "^3.68.0",
+    "zod": "^3.23.8"
+  }
+}
