@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import "~/assets/flip-clock.scss"
+import "@/assets/flip-clock.scss"
+import "@/assets/loading.scss"
 import {onBeforeUnmount, onMounted, type Ref} from "vue";
 import FlipClock from "~/components/FlipClock.vue";
 import dayjs from 'dayjs'
@@ -11,6 +12,8 @@ enum TimerType {
   UPTIME = 0,
   TIMER = 1,
   REMOVE = 2,
+
+  STREAM_OFF = 50,
 }
 
 enum TimerMode {
@@ -35,7 +38,7 @@ definePageMeta({
   layout: 'transparent'
 })
 useSeoMeta({
-  title: `Timer on ${uid}`,
+  title: `nabot :: Timer on ${uid}`,
   robots: false
 })
 
@@ -62,6 +65,8 @@ const { status, data, send, open, close } = useWebSocket(`wss://api-nabot.mori.s
         case TimerType.UPTIME:
           startCountUpFromTime(message.time)
           break
+        case TimerType.STREAM_OFF:
+          stopTimer()
       }
   }
 })
@@ -177,8 +182,10 @@ const startCountDownFromTime = (time: string) => {
 
 <template>
   <div>
-    <div v-if="isDisabled" class="overlay"></div>
-    <div class="timer" :style="{ opacity: isDisabled ? 0 : 1 }">
+    <div v-if="isDisabled" class="overlay">
+      <div class="loader"></div>
+    </div>
+    <div v-else class="timer">
       <FlipClock :time="hours" :flipFlags="flipFlags[0]" />
       <FlipClock :time="minutes" :flipFlags="flipFlags[1]" />
       <FlipClock :time="seconds" :flipFlags="flipFlags[2]" />

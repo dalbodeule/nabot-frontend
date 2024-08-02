@@ -5,7 +5,17 @@ export default defineNuxtConfig({
   build: {
     transpile: [ 'Dayjs' ]
   },
+  nitro: {
+    preset: 'cloudflare-module'
+  },
+  css: [
+    '@fortawesome/fontawesome-svg-core/styles.css'
+  ],
+  purgecss: {
+    safelist: [/svg.*/, /fa.*/]
+  },
   modules: [
-      '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    "nuxt-purgecss"
   ]
 })

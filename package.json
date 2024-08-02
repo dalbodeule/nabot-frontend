@@ -10,13 +10,20 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@fortawesome/free-brands-svg-icons": "^6.6.0",
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
+    "@pinia/nuxt": "^0.5.1",
     "dayjs": "^1.11.12",
-    "vue": "latest"
+    "vue": "latest",
+    "bulma": "^1.0.1"
   },
   "devDependencies": {
     "@vueuse/core": "^10.11.0",
     "@vueuse/nuxt": "^10.11.0",
     "nuxt": "^3.12.4",
+    "nuxt-purgecss": "^2.0.0",
     "sass": "^1.77.8",
     "sass-loader": "^16.0.0",
     "wrangler": "^3.68.0",
