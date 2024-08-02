@@ -16,6 +16,7 @@ export default defineNuxtConfig({
   },
   modules: [
     '@vueuse/nuxt',
-    "nuxt-purgecss"
+    'nuxt-purgecss',
+    '@nuxt/eslint',
   ]
 })

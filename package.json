@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
@@ -15,11 +17,12 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@pinia/nuxt": "^0.5.1",
+    "bulma": "^1.0.1",
     "dayjs": "^1.11.12",
-    "vue": "latest",
-    "bulma": "^1.0.1"
+    "vue": "latest"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^0.4.0",
     "@vueuse/core": "^10.11.0",
     "@vueuse/nuxt": "^10.11.0",
     "nuxt": "^3.12.4",

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import "@/assets/flip-clock.scss"
 import "@/assets/loading.scss"
-import {onBeforeUnmount, onMounted, type Ref} from "vue";
+import {onBeforeUnmount, type Ref} from "vue";
 import FlipClock from "~/components/FlipClock.vue";
 import dayjs from 'dayjs'
 import { useWebSocket } from "@vueuse/core"
@@ -42,18 +42,18 @@ useSeoMeta({
   robots: false
 })
 
-const { status, data, send, open, close } = useWebSocket(`wss://api-nabot.mori.space/timer/${uid}`, {
+const { close } = useWebSocket(`wss://api-nabot.mori.space/timer/${uid}`, {
   autoReconnect: true,
   onError(ws, event) {
     console.error("WebSocket error: ", event)
   },
-  onConnected(ws) {
+  onConnected(_ws) {
     console.log("WebSocket connected.")
   },
-  onDisconnected(ws) {
+  onDisconnected(_ws) {
     console.log("WebSocket disconnected.")
   },
-  onMessage(ws, msg) {
+  onMessage(_ws, msg) {
     const message = JSON.parse(msg.data) as { type: TimerType, time: string }
     switch (message.type) {
         case TimerType.REMOVE:
@@ -183,12 +183,12 @@ const startCountDownFromTime = (time: string) => {
 <template>
   <div>
     <div v-if="isDisabled" class="overlay">
-      <div class="loader"></div>
+      <div class="loader"/>
     </div>
     <div v-else class="timer">
-      <FlipClock :time="hours" :flipFlags="flipFlags[0]" />
-      <FlipClock :time="minutes" :flipFlags="flipFlags[1]" />
-      <FlipClock :time="seconds" :flipFlags="flipFlags[2]" />
+      <FlipClock :time="hours" :flip-flags="flipFlags[0]" />
+      <FlipClock :time="minutes" :flip-flags="flipFlags[1]" />
+      <FlipClock :time="seconds" :flip-flags="flipFlags[2]" />
     </div>
   </div>
 </template>
