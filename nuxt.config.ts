@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     preset: 'cloudflare-module'
   },
   css: [
-    '@fortawesome/fontawesome-svg-core/styles.css'
+    '@fortawesome/fontawesome-svg-core/styles.css',
+    '@/assets/default.scss'
   ],
   purgecss: {
     safelist: [/svg.*/, /fa.*/]
