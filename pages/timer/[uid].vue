@@ -22,7 +22,7 @@ enum TimerMode {
   DOWN = 2
 }
 
-const isDisabled = ref(true)
+const status: Ref<TimerType> = ref(TimerType.STREAM_OFF)
 const flipFlags: Ref<[boolean, boolean][]>
   = ref([[false, false], [false, false], [false, false]])
 const mode: Ref<TimerMode> = ref(TimerMode.DEFAULT)
@@ -68,6 +68,7 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/timer/${uid}`, {
         case TimerType.STREAM_OFF:
           stopTimer()
       }
+      status.value = message.type
   }
 })
 
@@ -76,7 +77,6 @@ const startTimer = () => {
     stopTimer()
   }
   timer.value = setInterval(updateTime, 1000) as unknown as number
-  isDisabled.value = false
 }
 
 const stopTimer = () => {
@@ -84,8 +84,6 @@ const stopTimer = () => {
     clearInterval(timer.value)
     timer.value = 0
   }
-
-  isDisabled.value = true
 }
 
 const updateTime = () => {
@@ -182,10 +180,10 @@ const startCountDownFromTime = (time: string) => {
 
 <template>
   <div>
-    <div v-if="isDisabled" class="overlay">
+    <div v-if="status == TimerType.STREAM_OFF" class="overlay">
       <div class="loader"/>
     </div>
-    <div v-else class="timer">
+    <div v-else-if="status != TimerType.REMOVE" class="timer">
       <FlipClock :time="hours" :flip-flags="flipFlags[0]" />
       <FlipClock :time="minutes" :flip-flags="flipFlags[1]" />
       <FlipClock :time="seconds" :flip-flags="flipFlags[2]" />
