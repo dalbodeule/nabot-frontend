@@ -11,7 +11,7 @@ useHead({
 </script>
 <template>
   <div>
-    <div class="container" style="margin-top: 20px; min-height: 80vh;">
+    <div class="container is-full-tablet" style="margin-top: 20px; min-height: 80vh;">
       <NuxtPage />
     </div>
   </div>
