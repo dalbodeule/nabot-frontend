@@ -2,7 +2,7 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, getSessionUser, getYoutubeVideoId, type IChzzkStreamer} from "@/assets/tools";
+import {formatSeconds, getChzzkUser, getSessionUser, getYoutubeVideoId} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 import type {IChzzkSession} from "~/components/ChzzkProfileWithSID.vue";
 
@@ -170,7 +170,7 @@ const sendRemoveSignal = (id: number, url: string) => {
   sendSignal({
     type: SongType.REMOVE,
     uid: uid.value,
-    url: null,
+    url,
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: null,
