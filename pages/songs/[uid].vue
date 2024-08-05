@@ -8,7 +8,8 @@ export interface ISong {
   name: string,
   author: string,
   time: number,
-  reqName: string
+  reqName: string,
+  url: string
 }
 
 export interface ISongResponse {
@@ -17,7 +18,8 @@ export interface ISongResponse {
   reqUid: string | null,
   name: string | null,
   author: string | null
-  time: number | null
+  time: number | null,
+  url: string | null,
 }
 
 const route = useRoute()
@@ -56,7 +58,8 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
           name: message.name ?? "",
           author: message.author ?? "",
           time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? ""
+          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? "",
+          url: message.url ?? ""
         })
         break
       case SongType.REMOVE:
@@ -65,7 +68,7 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
         })
         break
       case SongType.NEXT:
-        list.value = list.value.slice(0, 1)
+        list.value.shift()
         break
       case SongType.STREAM_OFF:
         list.value = []

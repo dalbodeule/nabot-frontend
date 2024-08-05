@@ -15,9 +15,5 @@ export default defineNuxtConfig({
   purgecss: {
     safelist: [/svg.*/, /fa.*/]
   },
-  modules: [
-    '@vueuse/nuxt',
-    'nuxt-purgecss',
-    '@nuxt/eslint',
-  ]
+  modules: ['@vueuse/nuxt', 'nuxt-purgecss', '@nuxt/eslint', "@nuxt/scripts"]
 })
