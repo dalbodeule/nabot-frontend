@@ -2,41 +2,39 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
+import {formatSeconds, getChzzkUser, getSessionUser, type IChzzkStreamer} from "@/assets/tools";
+import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 
-export interface ISong {
-  name: string,
-  author: string,
-  time: number,
-  reqName: string
-}
-
-export interface ISongResponse {
+export interface ISongRequest {
   type: SongType,
   uid: string,
-  reqUid: string | null,
-  name: string | null,
-  author: string | null
-  time: number | null
+  url: string | null,
+  maxQueue: number | null,
+  maxUserLimit: number | null,
+  isStreamerOnly: boolean | null,
+  remove: number | null
 }
 
 const route = useRoute()
-const uid = route.params.uid as string
+const sid = route.params.sid as string
+const uid: Ref<string> = ref("")
 
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 const list: Ref<ISong[]> = ref([])
 
+const music: Ref<string> = ref("")
+
 const getProfile = (value: IChzzkStreamer | undefined) => {
   streamer.value = value
 
   useSeoMeta({
-    title: `nabot :: Playlist :: ${streamer.value?.nickname ?? "??"}`,
+    title: `nabot :: Music manager :: ${streamer.value?.nickname ?? "??"}`,
     robots: false,
   })
 }
 
-const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
+const { send, status: WSStatus, close } = useWebSocket(`wss://api-nabot.mori.space/songlist/${sid}`, {
   autoReconnect: true,
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
@@ -72,14 +70,34 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
         break
     }
   }
-
 })
+
+const addMusic = async() => {
+  if(!music.value) return
+  status.value = Status.LOADING
+
+  const r: ISongRequest = {
+    type: SongType.ADD,
+    uid: uid.value,
+    url: music.value,
+    maxQueue: null,
+    maxUserLimit: null,
+    isStreamerOnly: null,
+    remove: null
+  }
+
+  if(WSStatus.value == "OPEN")
+    send(JSON.stringify(r))
+
+  status.value = Status.DONE
+}
 
 onBeforeUnmount(() => close())
 
 ;(async() => {
   try {
-    list.value = await (await fetch(`https://api-nabot.mori.space/songs/${uid}`, {
+    uid.value = (await getSessionUser(sid)).uid
+    list.value = await (await fetch(`https://api-nabot.mori.space/songs/${uid.value}`, {
       method: 'GET'
     })).json()
     status.value = Status.DONE
@@ -91,12 +109,17 @@ onBeforeUnmount(() => close())
 </script>
 
 <template>
-  <div>
+<div>
     <div v-if="status == Status.LOADING" class="page-overlay">
       <div class="loader"></div>
     </div>
     <div class="box">
-      <ChzzkProfile :uid="uid" sid="" @profile="getProfile" />
+      <LazyChzzkProfile :uid="uid" @profile="getProfile" />
+      <div style="width: 500px; height: 300px; background-color: black;"/>
+      <input v-model="music" type="url" name="">
+      <button type="button" class="button is-primary" :disabled="!music" @click="addMusic">추가</button>
+    </div>
+    <div class="box">
       <table class="table is-fullwidth">
         <thead>
           <tr>

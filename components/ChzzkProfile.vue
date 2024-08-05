@@ -5,7 +5,7 @@ import {getChzzkUser, type IChzzkStreamer} from "assets/tools";
 
 const props = defineProps<{ uid: string }>()
 const emit = defineEmits<{
-  profile: [value: IChzzkStreamer | null]
+  profile: [value: IChzzkStreamer | undefined ]
 }>()
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 

@@ -11,12 +11,16 @@ export function formatSeconds(seconds: number): string {
 }
 
 export interface IChzzkStreamer {
-  uid: string,
-  nickname: string,
-  isStreamOn: boolean,
-  avatarUrl: string
+    uid: string,
+    nickname: string,
+    isStreamOn: boolean,
+    avatarUrl: string
 }
 
 export async function getChzzkUser(uid: string) {
-     return await useRequestFetch()(`https://api-nabot.mori.space/user/${uid}`) as IChzzkStreamer
+    return await useRequestFetch()(`https://api-nabot.mori.space/user/${uid}`) as IChzzkStreamer
+}
+
+export async function getSessionUser(sid: string) {
+    return await useRequestFetch()(`https://api-nabot.mori.space/session/${sid}`) as IChzzkStreamer
 }
