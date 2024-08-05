@@ -2,7 +2,7 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, getSessionUser, type IChzzkStreamer} from "@/assets/tools";
+import {formatSeconds, getChzzkUser, getSessionUser, getYoutubeVideoId, type IChzzkStreamer} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 
 export interface ISongRequest {
@@ -22,6 +22,21 @@ const uid: Ref<string> = ref("")
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 const list: Ref<ISong[]> = ref([])
+
+const autoPlay: Ref<boolean> = ref(true)
+const current: Ref<ISong | undefined> = ref()
+
+const youtubeId: Ref<string> = ref("")
+const showPlayer: Ref<boolean> = ref(false)
+
+watchEffect( async () => {
+  showPlayer.value = false
+  youtubeId.value = getYoutubeVideoId(current.value?.url ?? "") ?? ""
+  console.log(current.value)
+  await nextTick()
+  if(youtubeId.value)
+    showPlayer.value = true
+})
 
 const music: Ref<string> = ref("")
 
@@ -54,7 +69,8 @@ const { send, status: WSStatus, close } = useWebSocket(`wss://api-nabot.mori.spa
           name: message.name ?? "",
           author: message.author ?? "",
           time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? ""
+          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? "",
+          url: message.url ?? ""
         })
         break
       case SongType.REMOVE:
@@ -63,7 +79,7 @@ const { send, status: WSStatus, close } = useWebSocket(`wss://api-nabot.mori.spa
         })
         break
       case SongType.NEXT:
-        list.value = list.value.slice(0, 1)
+        current.value = list.value.shift()
         break
       case SongType.STREAM_OFF:
         list.value = []
@@ -86,10 +102,34 @@ const addMusic = async() => {
     remove: null
   }
 
+  music.value = ""
+
   if(WSStatus.value == "OPEN")
     send(JSON.stringify(r))
 
   status.value = Status.DONE
+}
+
+const sendNextSignal = async() => {
+  const r: ISongRequest = {
+    type: SongType.NEXT,
+    uid: uid.value,
+    url: null,
+    maxQueue: null,
+    maxUserLimit: null,
+    isStreamerOnly: null,
+    remove: null
+  }
+  if (WSStatus.value == "OPEN") send(JSON.stringify(r))
+}
+
+const readyEvent = async(event: YT.PlayerEvent) => event.target.playVideo()
+const stateChanged = async(event: YT.OnStateChangeEvent, _target: YT.Player) => {
+  switch(event.data) {
+    case YT.PlayerState.ENDED:
+      await sendNextSignal()
+      break
+  }
 }
 
 onBeforeUnmount(() => close())
@@ -100,6 +140,7 @@ onBeforeUnmount(() => close())
     list.value = await (await fetch(`https://api-nabot.mori.space/songs/${uid.value}`, {
       method: 'GET'
     })).json()
+
     status.value = Status.DONE
   } catch(e) {
     console.error(`Error found! ${e ?? ""}`)
@@ -111,13 +152,30 @@ onBeforeUnmount(() => close())
 <template>
 <div>
     <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loader"></div>
+      <div class="loader"/>
     </div>
     <div class="box">
-      <LazyChzzkProfile :uid="uid" @profile="getProfile" />
-      <div style="width: 500px; height: 300px; background-color: black;"/>
+      <div class="fixed-grid">
+        <div class="grid">
+          <div class="cell">
+            <ChzzkProfileWithSID :sid="sid" @profile="getProfile"/>
+          </div>
+          <div class="cell">
+            <ScriptYouTubePlayer
+                v-if="showPlayer"
+                :key="youtubeId"
+                trigger="immediate"
+                :video-id="youtubeId"
+                :player-vars="{autoplay: autoPlay ? 1 : 0}"
+                @ready="readyEvent"
+                @state-change="stateChanged"
+            />
+          </div>
+        </div>
+      </div>
       <input v-model="music" type="url" name="">
       <button type="button" class="button is-primary" :disabled="!music" @click="addMusic">추가</button>
+      <button type="button" class="button is-primary" @click="sendNextSignal">다음곡</button>
     </div>
     <div class="box">
       <table class="table is-fullwidth">

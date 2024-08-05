@@ -24,3 +24,12 @@ export async function getChzzkUser(uid: string) {
 export async function getSessionUser(sid: string) {
     return await useRequestFetch()(`https://api-nabot.mori.space/session/${sid}`) as IChzzkStreamer
 }
+
+const regex = /.*(?:youtu.be\/|v\/|u\/\\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+
+export function getYoutubeVideoId(url: string): string | undefined {
+    const matchResult = regex.exec(url)
+
+    if(matchResult) return matchResult[1]
+    else return undefined
+}
