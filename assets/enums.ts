@@ -5,9 +5,11 @@ export enum Status {
 }
 
 export enum SongType {
-  ADD = 0,
-  REMOVE = 1,
-  NEXT = 2,
+    ADD = 0,
+    REMOVE = 1,
+    NEXT = 2,
 
-  STREAM_OFF = 50
+    STREAM_OFF = 50,
+
+    OTHER = 100
 }

@@ -96,7 +96,7 @@ onBeforeUnmount(() => close())
 <template>
   <div>
     <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loader"></div>
+      <div class="loader"/>
     </div>
     <div class="box">
       <ChzzkProfile :uid="uid" sid="" @profile="getProfile" />

@@ -3,11 +3,17 @@ import "bulma/bulma.scss"
 import type {Ref} from "vue";
 import {getSessionUser, type IChzzkStreamer} from "assets/tools";
 
+export interface IChzzkSession extends IChzzkStreamer {
+  maxQueueSize: number,
+  maxUserSize: number,
+  isStreamerOnly: boolean,
+}
+
 const props = defineProps<{ sid: string }>()
 const emit = defineEmits<{
-  profile: [value: IChzzkStreamer | undefined ]
+  profile: [value: IChzzkSession | undefined ]
 }>()
-const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
+const streamer: Ref<IChzzkSession | undefined> = ref(undefined)
 
 ;(async() => {
   try {
