@@ -1,26 +1,10 @@
 <script setup lang="ts">
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
+import '@/assets/billboard.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
-
-export interface ISong {
-  name: string,
-  author: string,
-  time: number,
-  reqName: string,
-  url: string
-}
-
-export interface ISongResponse {
-  type: SongType,
-  uid: string,
-  reqUid: string | null,
-  name: string | null,
-  author: string | null
-  time: number | null,
-  url: string | null,
-}
+import {getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
+import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 
 const route = useRoute()
 const uid = route.params.uid as string
@@ -28,15 +12,11 @@ const uid = route.params.uid as string
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 const list: Ref<ISong[]> = ref([])
+const current: Ref<ISong | undefined> = ref(undefined)
 
-const getProfile = (value: IChzzkStreamer | undefined) => {
-  streamer.value = value
-
-  useSeoMeta({
-    title: `nabot :: Playlist :: ${streamer.value?.nickname ?? "??"}`,
-    robots: false,
-  })
-}
+definePageMeta({
+  layout: 'transparent'
+})
 
 const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   autoReconnect: true,
@@ -68,7 +48,7 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
         })
         break
       case SongType.NEXT:
-        list.value.shift()
+        current.value = list.value.shift()
         break
       case SongType.STREAM_OFF:
         list.value = []
@@ -82,8 +62,14 @@ onBeforeUnmount(() => close())
 
 ;(async() => {
   try {
+    streamer.value = await getChzzkUser(uid)
     list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid}`, {
       method: 'GET'
+    })
+
+    useSeoMeta({
+      title: `nabot :: Music Widget :: ${streamer.value?.nickname ?? "??"}`,
+      robots: false,
     })
     status.value = Status.DONE
   } catch(e) {
@@ -98,33 +84,13 @@ onBeforeUnmount(() => close())
     <div v-if="status == Status.LOADING" class="page-overlay">
       <div class="loader"/>
     </div>
-    <div class="box">
-      <ChzzkProfile :uid="uid" sid="" @profile="getProfile" />
-      <table class="table is-fullwidth">
-        <thead>
-          <tr>
-            <td>ID</td>
-            <td style="width: 50em;">노래이름</td>
-            <td style="width: 10em;">업로더</td>
-            <td style="width: 20em;">신청자</td>
-            <td style="width: 8em;">시간</td>
-          </tr>
-        </thead>
-        <tbody v-if="list.length > 0">
-          <tr v-for="(song, key) in list" :key="`song_${key}`">
-            <td>{{ key + 1 }}</td>
-            <td>{{ song.name }}</td>
-            <td>{{ song.author }}</td>
-            <td>{{ song.reqName }}</td>
-            <td>{{ formatSeconds(song.time) }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="5" style="text-align: center;">신청된 노래가 없습니다.</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="billboard">
+      <div id="currentSong" class="song">
+        <span>지금 노래: {{ current?.url ? `${current?.name} - ${current?.author}` : "노래 정보가 없습니다." }} </span>
+      </div>
+      <div id="nextSong" class="song">
+        <span>다음 노래: {{ list[0]?.url ? `${list[0]?.name} - ${list[0]?.author}` : "노래 정보가 없습니다." }}</span>
+      </div>
     </div>
   </div>
 </template>

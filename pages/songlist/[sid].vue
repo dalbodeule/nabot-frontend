@@ -83,7 +83,7 @@ const { send, status: WSStatus, close } = useWebSocket(`wss://api-nabot.mori.spa
         break
       case SongType.REMOVE:
         list.value = list.value.filter((value) => {
-          return (value.url == message.url)
+          return (value.url != message.url)
         })
         break
       case SongType.NEXT:
@@ -196,9 +196,9 @@ onBeforeUnmount(() => close())
 ;(async() => {
   try {
     uid.value = (await getSessionUser(sid)).uid
-    list.value = await (await fetch(`https://api-nabot.mori.space/songs/${uid.value}`, {
+    list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid.value}`, {
       method: 'GET'
-    })).json()
+    })
 
     status.value = Status.DONE
   } catch(e) {
