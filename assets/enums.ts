@@ -1,7 +1,10 @@
 export enum Status {
     LOADING = 0,
     DONE = 1,
-    ERROR = 2
+    ERROR = 2,
+
+    REQUIRE_LOGIN = 10,
+    REQUIRE_REGISTER = 11,
 }
 
 export enum SongType {

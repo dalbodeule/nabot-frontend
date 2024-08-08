@@ -1,5 +1,23 @@
 <script setup lang="ts">
+import type {Ref} from "vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import {Status} from "assets/enums";
 
+const user: Ref<IChzzkSession | undefined> | undefined = inject("USER")
+const status: Ref<Status> = ref(Status.LOADING)
+
+useSeoMeta({
+  title: 'Nabot :: Main',
+  description: 'Nabot :: smart chzzk bot.'
+})
+
+;(async() => {
+  try {
+    status.value = Status.DONE
+  } catch(e) {
+    console.error("error", e)
+  }
+})()
 </script>
 
 <template>
@@ -8,6 +26,13 @@
       <div class="content">
         <h1>나봇 홈페이지는 아직 제작중입니다.</h1>
       </div>
+      <br>
+      <template v-if="user">
+        <ChzzkProfileWithSession />
+      </template>
+      <template v-else>
+        <LoginBox url="https://nabot.mori.space/"></LoginBox>
+      </template>
     </section>
   </div>
 </template>

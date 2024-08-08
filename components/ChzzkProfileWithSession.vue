@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import "bulma/bulma.scss"
 import type {Ref} from "vue";
-import {getSessionUser, type IChzzkStreamer} from "assets/tools";
+import {type IChzzkStreamer} from "assets/tools";
 
 export interface IChzzkSession extends IChzzkStreamer {
   maxQueueSize: number,
@@ -9,20 +9,7 @@ export interface IChzzkSession extends IChzzkStreamer {
   isStreamerOnly: boolean,
 }
 
-const props = defineProps<{ sid: string }>()
-const emit = defineEmits<{
-  profile: [value: IChzzkSession | undefined ]
-}>()
-const streamer: Ref<IChzzkSession | undefined> = ref(undefined)
-
-;(async() => {
-  try {
-    streamer.value = await getSessionUser(props.sid)
-    emit("profile", streamer.value)
-  } catch(e) {
-    console.error(`ChzzkProfile: Error found! ${e ?? ""}`)
-  }
-})()
+const streamer: Ref<IChzzkStreamer | undefined> | undefined = inject("USER")
 </script>
 
 <template>
@@ -49,7 +36,17 @@ const streamer: Ref<IChzzkSession | undefined> = ref(undefined)
           <a
             class="subtitle is-6"
             :href="`https://chzzk.naver.com/live/${streamer.uid}`"
+            target="_blank"
           >바로가기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div v-else class="card">
+    <div class="card-content">
+      <div class="media">
+        <div class="media-content">
+          <p class="title is-4">로그인이 필요합니다.</p>
         </div>
       </div>
     </div>
