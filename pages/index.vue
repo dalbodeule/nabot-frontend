@@ -31,7 +31,7 @@ useSeoMeta({
         <ChzzkProfileWithSession />
       </template>
       <template v-else>
-        <LoginBox url="https://nabot.mori.space/"></LoginBox>
+        <LoginBox url="https://nabot.mori.space/"/>
       </template>
     </section>
   </div>

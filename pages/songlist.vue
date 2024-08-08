@@ -2,7 +2,7 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, getSessionUser, getYoutubeVideoId} from "@/assets/tools";
+import {formatSeconds, getChzzkUser, getYoutubeVideoId} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 import ChzzkProfileWithSession, {type IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
 
