@@ -2,9 +2,9 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, getSessionUser, getYoutubeVideoId} from "@/assets/tools";
+import {formatSeconds, getChzzkUser, getYoutubeVideoId} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSID.vue";
+import ChzzkProfileWithSession, {type IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
 
 export interface ISongRequest {
   type: SongType,
@@ -16,12 +16,12 @@ export interface ISongRequest {
   remove: number | null
 }
 
-const route = useRoute()
-const sid = route.params.sid as string
-const uid: Ref<string> = ref("")
+const config = useRuntimeConfig()
+
+const uid: Ref<string | undefined> = ref()
 
 const status: Ref<Status> = ref(Status.LOADING)
-const streamer: Ref<IChzzkSession | undefined> = ref(undefined)
+const streamer: Ref<IChzzkSession | undefined> | undefined = inject("USER")
 const list: Ref<ISong[]> = ref([])
 
 const autoPlay: Ref<boolean> = ref(true)
@@ -45,20 +45,19 @@ watchEffect( async () => {
 const music: Ref<string> = ref("")
 
 const getProfile = (value: IChzzkSession | undefined) => {
-  streamer.value = value
-
   queueSize.value = value?.maxQueueSize ?? 50
   personalSize.value = value?.maxUserSize ?? 5
   streamerOnly.value = value?.isStreamerOnly ?? false
 
   useSeoMeta({
-    title: `nabot :: Music manager :: ${streamer.value?.nickname ?? "??"}`,
+    title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
     robots: false,
   })
 }
 
-const { send, status: WSStatus, close } = useWebSocket(`wss://api-nabot.mori.space/songlist/${sid}`, {
+const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mori.space/songlist`, {
   autoReconnect: true,
+  immediate: false,
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },
@@ -77,7 +76,7 @@ const { send, status: WSStatus, close } = useWebSocket(`wss://api-nabot.mori.spa
           name: message.name ?? "",
           author: message.author ?? "",
           time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? "",
+          reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
           url: message.url ?? ""
         })
         break
@@ -102,7 +101,7 @@ const addMusic = async() => {
 
   const r: ISongRequest = {
     type: SongType.ADD,
-    uid: uid.value,
+    uid: uid.value!,
     url: music.value,
     maxQueue: null,
     maxUserLimit: null,
@@ -121,7 +120,7 @@ const addMusic = async() => {
 const sendNextSignal = () => {
   sendSignal({
     type: SongType.NEXT,
-    uid: uid.value,
+    uid: uid.value!,
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -133,7 +132,7 @@ const sendNextSignal = () => {
 const sendQueueSizeSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: uid.value,
+    uid: uid.value!,
     url: null,
     maxQueue: queueSize.value,
     maxUserLimit: null,
@@ -145,7 +144,7 @@ const sendQueueSizeSignal = () => {
 const sendPersonalSizeSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: uid.value,
+    uid: uid.value!,
     url: null,
     maxQueue: null,
     maxUserLimit: personalSize.value,
@@ -157,7 +156,7 @@ const sendPersonalSizeSignal = () => {
 const sendStreamerOnlySignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: uid.value,
+    uid: uid.value!,
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -169,7 +168,7 @@ const sendStreamerOnlySignal = () => {
 const sendRemoveSignal = (id: number, url: string) => {
   sendSignal({
     type: SongType.REMOVE,
-    uid: uid.value,
+    uid: uid.value!,
     url,
     maxQueue: null,
     maxUserLimit: null,
@@ -195,12 +194,21 @@ onBeforeUnmount(() => close())
 
 ;(async() => {
   try {
-    uid.value = (await getSessionUser(sid)).uid
+    if(streamer?.value) {
+      status.value = Status.REQUIRE_LOGIN
+      return
+    }
     list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid.value}`, {
-      method: 'GET'
+      method: 'GET',
+      credentials: 'include'
     })
 
-    status.value = Status.DONE
+    if (uid.value) {
+      open()
+      status.value = Status.DONE
+    } else {
+      status.value = Status.REQUIRE_LOGIN
+    }
   } catch(e) {
     console.error(`Error found! ${e ?? ""}`)
     status.value = Status.ERROR
@@ -213,11 +221,14 @@ onBeforeUnmount(() => close())
     <div v-if="status == Status.LOADING" class="page-overlay">
       <div class="loader"/>
     </div>
+    <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
+      <LoginBox url="https://nabot.mori.space/songlist" />
+    </div>
     <div>
       <div class="fixed-grid">
         <div class="grid">
           <div class="cell">
-            <ChzzkProfileWithSID :sid="sid" @profile="getProfile"/>
+            <ChzzkProfileWithSession @profile="getProfile"/>
             <div class="box">
               <div class="field is-horizontal">
                 <div class="field-label is-normal">

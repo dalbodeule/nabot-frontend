@@ -5,6 +5,11 @@ export default defineNuxtConfig({
   build: {
     transpile: [ 'Dayjs' ]
   },
+  runtimeConfig: {
+    public: {
+      backend_url: "http://localhost:8080"
+    }
+  },
   nitro: {
     preset: 'cloudflare-module'
   },

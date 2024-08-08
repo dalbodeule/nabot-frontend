@@ -1,4 +1,4 @@
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSID.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
 
 export function formatSeconds(seconds: number): string {
     const hours = Math.floor(seconds / 3600)
@@ -19,12 +19,14 @@ export interface IChzzkStreamer {
     avatarUrl: string
 }
 
-export async function getChzzkUser(uid: string) {
-    return await useRequestFetch()(`https://api-nabot.mori.space/user/${uid}`) as IChzzkStreamer
+export async function getChzzkUser(uid: string, url: string): Promise<IChzzkStreamer> {
+    return await useRequestFetch()(`${url}/user/${uid}`) as IChzzkStreamer
 }
 
-export async function getSessionUser(sid: string) {
-    return await useRequestFetch()(`https://api-nabot.mori.space/session/${sid}`) as IChzzkSession
+export async function getSessionUser(url: string) {
+    return await useRequestFetch()(`${url}/user`, {
+        credentials: 'include',
+    }) as IChzzkSession | undefined
 }
 
 const regex = /.*(?:youtu.be\/|v\/|u\/\\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
