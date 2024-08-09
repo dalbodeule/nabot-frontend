@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const router = useRouter()
+const route = useRoute()
 const config = useRuntimeConfig()
 
-router.push(`${config.public.backend_url}/auth/login`)
+route.path = `${config.public.backend_url}/auth/login`
 </script>
