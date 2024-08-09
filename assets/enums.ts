@@ -5,6 +5,7 @@ export enum Status {
 
     REQUIRE_LOGIN = 10,
     REQUIRE_REGISTER = 11,
+    REQUIRE_DISCORD = 12,
 }
 
 export enum SongType {
@@ -15,4 +16,12 @@ export enum SongType {
     STREAM_OFF = 50,
 
     OTHER = 100
+}
+
+export enum TimerType {
+    UPTIME = 0,
+    TIMER = 1,
+    REMOVE = 2,
+
+    STREAM_OFF = 50
 }
