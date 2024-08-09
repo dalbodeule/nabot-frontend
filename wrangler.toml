@@ -7,5 +7,5 @@ compatibility_date = "2024-07-12"
 bucket = ".output/public"
 
 [vars]
-
+NUXT_PUBLIC_BACKEND_URL = "https://api-nabot.mori.space"
 

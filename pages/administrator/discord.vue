@@ -1,5 +1,11 @@
 <script setup lang="ts">
 
+definePageMeta({
+  layout: 'administrator'
+})
+
+// const user = inject("USER")
+
 </script>
 
 <template>

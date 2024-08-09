@@ -30,6 +30,7 @@ const user = inject("USER")
       </div>
       <div v-else class="navbar-end">
         <NuxtLink class="navbar-item" to="/logout">로그아웃</NuxtLink>
+        <NuxtLink class="navbar-item" to="/administrator">봇 관리</NuxtLink>
       </div>
     </div>
   </nav>

@@ -44,17 +44,6 @@ watchEffect( async () => {
 
 const music: Ref<string> = ref("")
 
-const getProfile = (value: IChzzkSession | undefined) => {
-  queueSize.value = value?.maxQueueSize ?? 50
-  personalSize.value = value?.maxUserSize ?? 5
-  streamerOnly.value = value?.isStreamerOnly ?? false
-
-  useSeoMeta({
-    title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
-    robots: false,
-  })
-}
-
 const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mori.space/songlist`, {
   autoReconnect: true,
   immediate: false,
@@ -192,16 +181,29 @@ const stateChanged = async(event: YT.OnStateChangeEvent, _target: YT.Player) => 
 
 onBeforeUnmount(() => close())
 
+const setup = () => {
+  queueSize.value = streamer?.value?.maxQueueSize ?? 50
+  personalSize.value = streamer?.value?.maxUserSize ?? 5
+  streamerOnly.value = streamer?.value?.isStreamerOnly ?? false
+
+  useSeoMeta({
+      title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
+      robots: false,
+  })
+}
+
 ;(async() => {
   try {
     if(streamer?.value) {
       status.value = Status.REQUIRE_LOGIN
       return
     }
+
     list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid.value}`, {
       method: 'GET',
       credentials: 'include'
     })
+    watch(streamer!, setup)
 
     if (uid.value) {
       open()
@@ -228,7 +230,7 @@ onBeforeUnmount(() => close())
       <div class="fixed-grid">
         <div class="grid">
           <div class="cell">
-            <ChzzkProfileWithSession @profile="getProfile"/>
+            <ChzzkProfileWithSession/>
             <div class="box">
               <div class="field is-horizontal">
                 <div class="field-label is-normal">
