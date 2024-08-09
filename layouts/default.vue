@@ -34,8 +34,9 @@ const registerChzzk = async () => {
 
 ;(async() => {
   try {
-    user.value = await getSessionUser(config.public.backend_url)
     status.value = Status.LOADING
+    user.value = await getSessionUser(config.public.backend_url)
+    status.value = Status.DONE
   } catch(e) {
     if(e.status == 404) {
       status.value = Status.REQUIRE_REGISTER
@@ -56,34 +57,39 @@ useHead({
 </script>
 <template>
   <div style="width: 100%; height: 100%;">
-    <div v-if="status == Status.REQUIRE_REGISTER" class="page-overlay">
-      <div class="box">
-        <div class="card-content">
-          <div class="media">
-            <div class="media-content">
-              <form @submit.prevent="registerChzzk">
-                <h1>치지직 주소를 입력해 주세요!</h1>
-                <div class="field">
-                  <label class="label">치지직 주소</label>
-                  <div class="control">
-                    <input v-model="chzzkId" class="input" type="url" placeholder="https://chzzk.naver.com/">
+    <div v-if="status == Status.LOADING" class="page-overlay">
+      <div class="loading"/>
+    </div>
+    <div style="width: 100%; height: 100%;">
+      <div v-if="status == Status.REQUIRE_REGISTER" class="page-overlay">
+        <div class="box">
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <form @submit.prevent="registerChzzk">
+                  <h1>치지직 주소를 입력해 주세요!</h1>
+                  <div class="field">
+                    <label class="label">치지직 주소</label>
+                    <div class="control">
+                      <input v-model="chzzkId" class="input" type="url" placeholder="https://chzzk.naver.com/">
+                    </div>
                   </div>
-                </div>
-                <div class="field is-grouped is-grouped-right">
-                  <div class="control">
-                    <button type="submit" class="button is-primary">제출하기!</button>
+                  <div class="field is-grouped is-grouped-right">
+                    <div class="control">
+                      <button type="submit" class="button is-primary">제출하기!</button>
+                    </div>
                   </div>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <SiteHeader />
+      <div class="container" style="margin-top: 20px; min-height: 80vh;">
+        <NuxtPage />
+      </div>
+      <SiteFooter />
     </div>
-    <SiteHeader />
-    <div class="container" style="margin-top: 20px; min-height: 80vh;">
-      <NuxtPage />
-    </div>
-    <SiteFooter />
   </div>
 </template>
