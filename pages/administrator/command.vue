@@ -152,6 +152,8 @@ watchEffect(async () => {
             <button class="button is-light" @click="insertPlaceholder(index, '<daily_counter:>')">데일리 카운터</button>
             <button class="button is-light" @click="insertPlaceholder(index, '<days:yyyy-mm-dd>')">디데이 카운터</button>
           </div>
+          <p class="help is-info">일반 카운터, 개인 카운터, 데일리 카운터는 : 뒤에 이름을 적어주세요!</p>
+          <p class="help is-info">디데이 카운터는 yyyy-mm-dd 를 날짜로 바꿔주세요. (예시: 2024-08-10)</p>
         </div>
         <!-- 저장 및 삭제 버튼 -->
         <div class="field is-grouped is-grouped-right">

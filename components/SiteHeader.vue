@@ -4,6 +4,8 @@ import type { Ref } from "vue";
 const show: Ref<boolean> = ref(false)
 const user = inject("USER")
 
+const config = useRuntimeConfig()
+
 </script>
 
 <template>
@@ -26,7 +28,15 @@ const user = inject("USER")
         <a class="navbar-item" href="/policy" target="_blank">이용약관</a>
       </div>
       <div v-if="user == undefined" class="navbar-end">
-        <NuxtLink class="navbar-item" to="/login">로그인</NuxtLink>
+        <a
+          class="button is-align-self-center navbar-item"
+          :href="`${config.public.backend_url}/auth/login`"
+          target="_self"
+          style="color: #ffffff; background-color: #03c75a;"
+      >
+        <img src="@/public/naver-logo.png" style="height: 20px;">
+        &nbsp;Naver 아이디로 로그인
+      </a>
       </div>
       <div v-else class="navbar-end">
         <NuxtLink class="navbar-item" to="/logout">로그아웃</NuxtLink>

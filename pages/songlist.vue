@@ -18,8 +18,6 @@ export interface ISongRequest {
 
 const config = useRuntimeConfig()
 
-const uid: Ref<string | undefined> = ref()
-
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkSession | undefined> | undefined = inject("USER")
 const list: Ref<ISong[]> = ref([])
@@ -90,7 +88,7 @@ const addMusic = async() => {
 
   const r: ISongRequest = {
     type: SongType.ADD,
-    uid: uid.value!,
+    uid: streamer?.value?.uid ?? "",
     url: music.value,
     maxQueue: null,
     maxUserLimit: null,
@@ -109,7 +107,7 @@ const addMusic = async() => {
 const sendNextSignal = () => {
   sendSignal({
     type: SongType.NEXT,
-    uid: uid.value!,
+    uid: streamer?.value?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -121,7 +119,7 @@ const sendNextSignal = () => {
 const sendQueueSizeSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: uid.value!,
+    uid: streamer?.value?.uid ?? "",
     url: null,
     maxQueue: queueSize.value,
     maxUserLimit: null,
@@ -133,7 +131,7 @@ const sendQueueSizeSignal = () => {
 const sendPersonalSizeSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: uid.value!,
+    uid: streamer?.value?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: personalSize.value,
@@ -145,7 +143,7 @@ const sendPersonalSizeSignal = () => {
 const sendStreamerOnlySignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: uid.value!,
+    uid: streamer?.value?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -157,7 +155,7 @@ const sendStreamerOnlySignal = () => {
 const sendRemoveSignal = (id: number, url: string) => {
   sendSignal({
     type: SongType.REMOVE,
-    uid: uid.value!,
+    uid: streamer?.value?.uid ?? "",
     url,
     maxQueue: null,
     maxUserLimit: null,
@@ -181,31 +179,23 @@ const stateChanged = async(event: YT.OnStateChangeEvent, _target: YT.Player) => 
 
 onBeforeUnmount(() => close())
 
-const setup = () => {
-  queueSize.value = streamer?.value?.maxQueueSize ?? 50
-  personalSize.value = streamer?.value?.maxUserSize ?? 5
-  streamerOnly.value = streamer?.value?.isStreamerOnly ?? false
-
-  useSeoMeta({
-      title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
-      robots: false,
-  })
-}
-
-;(async() => {
+watchEffect(async () => {
+  console.log(streamer?.value?.uid)
   try {
-    if(streamer?.value) {
-      status.value = Status.REQUIRE_LOGIN
-      return
-    }
+    queueSize.value = streamer?.value?.maxQueueSize ?? 50
+    personalSize.value = streamer?.value?.maxUserSize ?? 5
+    streamerOnly.value = streamer?.value?.isStreamerOnly ?? false
 
-    list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid.value}`, {
-      method: 'GET',
-      credentials: 'include'
+    useSeoMeta({
+        title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
+        robots: false,
     })
-    watch(streamer!, setup)
 
-    if (uid.value) {
+    if (streamer?.value?.uid != undefined) {
+      list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${streamer.value.uid}`, {
+        method: 'GET',
+        credentials: 'include'
+      })
       open()
       status.value = Status.DONE
     } else {
@@ -215,7 +205,7 @@ const setup = () => {
     console.error(`Error found! ${e ?? ""}`)
     status.value = Status.ERROR
   }
-})()
+})
 </script>
 
 <template>

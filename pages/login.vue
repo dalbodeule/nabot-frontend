@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const route = useRoute()
 const config = useRuntimeConfig()
 
-route.path = `${config.public.backend_url}/auth/login`
+if(import.meta.client)
+  window.location.href = `${config.public.backend_url}?redirectUrl=https://nabot.mori.space/auth/login`
 </script>

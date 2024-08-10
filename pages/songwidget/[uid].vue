@@ -9,6 +9,8 @@ import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 const route = useRoute()
 const uid = route.params.uid as string
 
+const config = useRuntimeConfig()
+
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 const list: Ref<ISong[]> = ref([])
@@ -38,7 +40,7 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
           name: message.name ?? "",
           author: message.author ?? "",
           time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? "",
+          reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
           url: message.url ?? ""
         })
         break
@@ -62,8 +64,8 @@ onBeforeUnmount(() => close())
 
 ;(async() => {
   try {
-    streamer.value = await getChzzkUser(uid)
-    list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid}`, {
+    streamer.value = await getChzzkUser(uid, config.public.backend_url)
+    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
       method: 'GET'
     })
 

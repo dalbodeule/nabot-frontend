@@ -90,6 +90,17 @@ watchEffect(async () => {
         </div>
       </div>
     </div>
+    <div class="content">
+      <h1 class="title">타이머 미리보기</h1>
+      <iframe
+        :id="user?.uid"
+        :src="`https://nabot.mori.space/timer/${user?.uid}`"
+        frameborder="0"
+        allowfullscreen
+        width="800"
+        height="600"
+      />
+    </div>
   </div>
 </template>
 

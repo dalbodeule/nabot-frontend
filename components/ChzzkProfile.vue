@@ -8,10 +8,11 @@ const emit = defineEmits<{
   profile: [value: IChzzkStreamer | undefined ]
 }>()
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
+const config = useRuntimeConfig()
 
 ;(async() => {
   try {
-    streamer.value = await getChzzkUser(props.uid)
+    streamer.value = await getChzzkUser(props.uid, config.public.backend_url)
     emit("profile", streamer.value)
   } catch(e) {
     console.error(`ChzzkProfile: Error found! ${e ?? ""}`)

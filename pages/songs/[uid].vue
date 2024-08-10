@@ -22,8 +22,13 @@ export interface ISongResponse {
   url: string | null,
 }
 
+definePageMeta({
+  layout: 'transparent'
+})
+
 const route = useRoute()
 const uid = route.params.uid as string
+const config = useRuntimeConfig()
 
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
@@ -58,7 +63,7 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
           name: message.name ?? "",
           author: message.author ?? "",
           time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!)).nickname ?? "",
+          reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
           url: message.url ?? ""
         })
         break
@@ -82,7 +87,7 @@ onBeforeUnmount(() => close())
 
 ;(async() => {
   try {
-    list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${uid}`, {
+    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
       method: 'GET'
     })
     status.value = Status.DONE
@@ -94,12 +99,13 @@ onBeforeUnmount(() => close())
 </script>
 
 <template>
-  <div>
+  <div style="width: 100%; height: 100%;">
+    <SiteHeader />
     <div v-if="status == Status.LOADING" class="page-overlay">
       <div class="loader"/>
     </div>
     <div class="box">
-      <ChzzkProfile :uid="uid" sid="" @profile="getProfile" />
+      <ChzzkProfile :uid="uid" @profile="getProfile" />
       <table class="table is-fullwidth">
         <thead>
           <tr>
@@ -126,6 +132,7 @@ onBeforeUnmount(() => close())
         </tbody>
       </table>
     </div>
+    <SiteFooter />
   </div>
 </template>
 

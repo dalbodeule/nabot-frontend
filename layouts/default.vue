@@ -15,6 +15,8 @@ const status: Ref<Status> = ref(Status.LOADING)
 
 const chzzkId: Ref<string> = ref("")
 
+provide("USER", user)
+
 const registerChzzk = async () => {
   try {
     status.value = Status.LOADING
@@ -23,7 +25,7 @@ const registerChzzk = async () => {
       body: JSON.stringify({ chzzkUrl: chzzkId.value }),
       credentials: "include"
     })
-    if(!response) {
+    if(response) {
       status.value = Status.DONE
     }
   } catch(e) {
