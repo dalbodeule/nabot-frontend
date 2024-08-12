@@ -59,6 +59,9 @@ useHead({
             <li :class="{ 'is-active': route.path === '/administrator/timer' }">
               <NuxtLink to="/administrator/timer">타이머 설정</NuxtLink>
             </li>
+            <li :class="{ 'is-active': route.path === '/administrator/songlist' }">
+              <NuxtLink to="/administrator/songlist">치수 플레이리스트</NuxtLink>
+            </li>
           </ul>
         </div>
         <NuxtPage />

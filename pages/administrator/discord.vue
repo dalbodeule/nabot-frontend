@@ -3,12 +3,14 @@
 import type {Ref} from "vue";
 import {Status} from "assets/enums";
 import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 definePageMeta({
   layout: 'administrator'
 })
 
 const options: Ref<{ user: string, token: string } | undefined> = ref(undefined)
+const guilds: Ref<number[]> = ref([])
 const status: Ref<Status> = ref(Status.LOADING)
 
 const config = useRuntimeConfig()
@@ -29,6 +31,13 @@ const getDiscordStatus = async() => {
       method: 'GET',
       credentials: 'include'
     })
+    guilds.value = await useRequestFetch()(`${config.public.backend_url}/discord`, {
+      method: 'GET',
+      credentials: 'include'
+    })
+    if(guilds.value.length == 0) {
+      status.value = Status.REQUIRE_DISCORD
+    }
     status.value = Status.DONE
   } catch(e) {
     console.error(e.status, e.data)
@@ -59,33 +68,22 @@ watchEffect(async () => {
           <div class="card-content">
             <div class="media">
               <div class="media-content">
-                <p>연동을 원하는 디스코드 서버에서 다음 명령어를 입력해주세요!</p>
-                <p>/hook token:{{ options?.token }}</p>
-                <p>연동 후 새로고침 버튼을 눌러주세요!</p>
-                <button
-                  type="button"
-                  class="button is-primary"
-                  @click="getDiscordStatus"
-                >새로고침</button>
+                <p>로그인 버튼을 누른 뒤, 원하는 디스코드 서버를 선택해주세요!</p>
+                <a
+                    :href="`${config.public.backend_url}/auth/login/discord?redirectUrl=https://nabot.mori.space/administrator/discord`"
+                    target="_self"
+                    class="button"
+                    style="color: #ffffff; background-color: #5865F2;"
+                >
+                  <FontAwesomeIcon icon="['fab', 'discord']" /> Discord로 로그인
+                </a>
               </div>
             </div>
           </div>
         </div>
     </div>
     <div class="content">
-      <!-- <h1 class="title">타이머 설정</h1>
-      <div class="field">
-        <label class="label">타이머 옵션 선택</label>
-        <div class="control">
-∂
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="control">
-          <button class="button is-primary" @click="setTimer">저장</button>
-        </div>
-      </div> -->
+      <h1>디스코드 설정</h1>
     </div>
   </div>
 </template>

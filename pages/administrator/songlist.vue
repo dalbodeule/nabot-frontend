@@ -13,7 +13,8 @@ export interface ISongRequest {
   maxQueue: number | null,
   maxUserLimit: number | null,
   isStreamerOnly: boolean | null,
-  remove: number | null
+  remove: number | null,
+  isDisabled: boolean | null,
 }
 
 const config = useRuntimeConfig()
@@ -30,6 +31,12 @@ const showPlayer: Ref<boolean> = ref(false)
 const queueSize = ref(50)
 const personalSize = ref(5)
 const streamerOnly = ref(false)
+const isDisabled = ref(false)
+const isFirst = ref(true)
+
+definePageMeta({
+  layout: 'administrator'
+})
 
 watchEffect( async () => {
   showPlayer.value = false
@@ -66,6 +73,7 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
           reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
           url: message.url ?? ""
         })
+        if(!isFirst.value && autoPlay.value && list.value.length == 1) sendNextSignal()
         break
       case SongType.REMOVE:
         list.value = list.value.filter((value) => {
@@ -93,7 +101,8 @@ const addMusic = async() => {
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: null,
-    remove: null
+    remove: null,
+    isDisabled: null,
   }
 
   music.value = ""
@@ -105,6 +114,8 @@ const addMusic = async() => {
 }
 
 const sendNextSignal = () => {
+  if(!isFirst.value) isFirst.value = true
+
   sendSignal({
     type: SongType.NEXT,
     uid: streamer?.value?.uid ?? "",
@@ -112,7 +123,8 @@ const sendNextSignal = () => {
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: null,
-    remove: null
+    remove: null,
+    isDisabled: null,
   })
 }
 
@@ -124,7 +136,8 @@ const sendQueueSizeSignal = () => {
     maxQueue: queueSize.value,
     maxUserLimit: null,
     isStreamerOnly: null,
-    remove: null
+    remove: null,
+    isDisabled: null,
   })
 }
 
@@ -136,7 +149,8 @@ const sendPersonalSizeSignal = () => {
     maxQueue: null,
     maxUserLimit: personalSize.value,
     isStreamerOnly: null,
-    remove: null
+    remove: null,
+    isDisabled: null,
   })
 }
 
@@ -148,7 +162,8 @@ const sendStreamerOnlySignal = () => {
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: streamerOnly.value,
-    remove: null
+    remove: null,
+    isDisabled: null,
   })
 }
 
@@ -160,7 +175,21 @@ const sendRemoveSignal = (id: number, url: string) => {
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: null,
-    remove: id
+    remove: id,
+    isDisabled: null,
+  })
+}
+
+const sendDisabledSignal = () => {
+  sendSignal({
+    type: SongType.OTHER,
+    uid: streamer?.value?.uid ?? "",
+    url: null,
+    maxQueue: null,
+    maxUserLimit: null,
+    isStreamerOnly: null,
+    remove: null,
+    isDisabled: isDisabled.value,
   })
 }
 
@@ -214,7 +243,7 @@ watchEffect(async () => {
       <div class="loader"/>
     </div>
     <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
-      <LoginBox url="https://nabot.mori.space/songlist" />
+      <LoginBox url="https://nabot.mori.space/administrator/songlist" />
     </div>
     <div>
       <div class="fixed-grid">
@@ -282,6 +311,19 @@ watchEffect(async () => {
               </div>
               <div class="field is-horizontal">
                 <div class="field-label is-normal">
+                  <label class="label">기능 비활성화</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      <input v-model="isDisabled" type="checkbox" @click="sendDisabledSignal">
+                      신청곡 기능을 비활성화 합니다.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
                   <label class="label">자동재생</label>
                 </div>
                 <div class="field-body">
@@ -293,8 +335,28 @@ watchEffect(async () => {
                   </div>
                 </div>
               </div>
+              <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                  <label class="label">노래 위젯</label>
+                </div>
+                <div class="field-body">
+                  <div class="field">
+                    <div class="control">
+                      <input
+                        :value="`https://nabot.mori.space/songwidget/${streamer?.uid ?? ''}`"
+                        disabled
+                        class="input"
+                        type="url"
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div class="field is-grouped is-grouped-right">
-                <div class="control">
+                <div v-if="isFirst" class="control">
+                  <button class="button is-success" type="button" @click="sendNextSignal">노래시작</button>
+                </div>
+                <div v-else class="control">
                   <button class="button is-success" type="button" @click="sendNextSignal">다음노래</button>
                 </div>
                 <div class="control">
