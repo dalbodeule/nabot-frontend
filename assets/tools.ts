@@ -37,3 +37,11 @@ export function getYoutubeVideoId(url: string): string | undefined {
     if(matchResult) return matchResult[1]
     else return undefined
 }
+
+export function getGuildIconUrl(guildId: string, iconHash: string) {
+    return `https://cdn.discordapp.com/icons/${guildId}/${iconHash}.png`
+}
+
+export function getGuildBannerUrl(guildId: string, bannerHash: string) {
+    return `https://cdn.discordapp.com/banners/${guildId}/${bannerHash}.png`
+}

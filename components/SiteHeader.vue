@@ -23,7 +23,6 @@ const config = useRuntimeConfig()
     </a>
     <div class="navbar-menu" :class="show ? 'is-active' : ''">
       <div class="navbar-start">
-        <NuxtLink v-if="user != undefined" class="navbar-item" to="/administrator/songlist">치수 플레이리스트</NuxtLink>
         <a class="navbar-item" href="/privacy" target="_blank">개인정보 처리방침</a>
         <a class="navbar-item" href="/policy" target="_blank">이용약관</a>
       </div>

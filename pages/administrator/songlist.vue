@@ -38,15 +38,6 @@ definePageMeta({
   layout: 'administrator'
 })
 
-watchEffect( async () => {
-  showPlayer.value = false
-  youtubeId.value = getYoutubeVideoId(current.value?.url ?? "") ?? ""
-  console.log(current.value)
-  await nextTick()
-  if(youtubeId.value)
-    showPlayer.value = true
-})
-
 const music: Ref<string> = ref("")
 
 const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mori.space/songlist`, {
@@ -73,7 +64,7 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
           reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
           url: message.url ?? ""
         })
-        if(!isFirst.value && autoPlay.value && list.value.length == 1) sendNextSignal()
+        if(!isFirst.value && autoPlay.value && !current.value) sendNextSignal()
         break
       case SongType.REMOVE:
         list.value = list.value.filter((value) => {
@@ -82,6 +73,14 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
         break
       case SongType.NEXT:
         current.value = list.value.shift()
+
+        showPlayer.value = false
+        youtubeId.value = getYoutubeVideoId(current.value?.url ?? "") ?? ""
+        console.log(`NEXT: ${current.value?.name} - ${current.value?.author}`)
+        await nextTick()
+        if (youtubeId.value)
+          showPlayer.value = true
+
         break
       case SongType.STREAM_OFF:
         list.value = []
@@ -114,7 +113,7 @@ const addMusic = async() => {
 }
 
 const sendNextSignal = () => {
-  if(!isFirst.value) isFirst.value = true
+  if(isFirst.value) isFirst.value = false
 
   sendSignal({
     type: SongType.NEXT,
