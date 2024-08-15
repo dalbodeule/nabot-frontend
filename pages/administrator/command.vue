@@ -145,12 +145,48 @@ watchEffect(async () => {
            <days:yyyy-mm-dd>
            -->
           <div class="buttons">
-            <button class="button is-light" @click="insertPlaceholder(index, '<name>')">유저 이름</button>
-            <button class="button is-light" @click="insertPlaceholder(index, '<following>')">팔로우 기간</button>
-            <button class="button is-light" @click="insertPlaceholder(index, '<counter:>')">일반 카운터</button>
-            <button class="button is-light" @click="insertPlaceholder(index, '<personal_counter:>')">개인 카운터</button>
-            <button class="button is-light" @click="insertPlaceholder(index, '<daily_counter:>')">데일리 카운터</button>
-            <button class="button is-light" @click="insertPlaceholder(index, '<days:yyyy-mm-dd>')">디데이 카운터</button>
+            <div class="tooltip-wrapper">
+              <button
+                  class="button is-light"
+                  @click="insertPlaceholder(index, '<name>')"
+              >유저 이름</button>
+              <div class="tooltip">이 자리에 유저 이름이 표시됩니다.</div>
+            </div>
+            <div class="tooltip-wrapper">
+              <button
+                  class="button is-light"
+                  @click="insertPlaceholder(index, '<following>')"
+              >팔로우 기간</button>
+              <div class="tooltip">이 자리에 만 몇일 팔로우했는지 숫자로 나옵니다.</div>
+            </div>
+            <div class="tooltip-wrapper">
+              <button
+                  class="button is-light"
+                  @click="insertPlaceholder(index, '<counter:>')"
+              >일반 카운터</button>
+              <div class="tooltip">사용하면 +1 되는 카운터입니다. &lt;counter:이름&gt; 으로 작성합니다.</div>
+            </div>
+            <div class="tooltip-wrapper">
+              <button
+                  class="button is-light"
+                  @click="insertPlaceholder(index, '<personal_counter:>')"
+              >개인 카운터</button>
+              <div class="tooltip">사용하면 유저별로 +1 되는 카운터입니다. &lt;personal_counter:이름&gt; 으로 작성합니다.</div>
+            </div>
+            <div class="tooltip-wrapper">
+              <button
+                  class="button is-light"
+                  @click="insertPlaceholder(index, '<daily_counter:>')"
+              >데일리 카운터</button>
+              <div class="tooltip">사용하면 유저별 하루 한번 +1 되는 카운터입니다. &lt;daily_counter:이름&gt; 으로 작성합니다.<br>명령어 실패시 내용을 적어주세요!</div>
+            </div>
+            <div class="tooltip-wrapper">
+              <button
+                  class="button is-light"
+                  @click="insertPlaceholder(index, '<days:yyyy-mm-dd>')"
+              >디데이 카운터</button>
+              <div class="tooltip">yyyy-mm-dd 부터 몇일이 지났는지 숫자로 표시됩니다.</div>
+            </div>
           </div>
           <p class="help is-info">일반 카운터, 개인 카운터, 데일리 카운터는 : 뒤에 이름을 적어주세요!</p>
           <p class="help is-info">디데이 카운터는 yyyy-mm-dd 를 날짜로 바꿔주세요. (예시: 2024-08-10)</p>
@@ -174,3 +210,32 @@ watchEffect(async () => {
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+
+  .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1;
+  }
+
+  &:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+</style>

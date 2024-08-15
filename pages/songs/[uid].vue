@@ -45,6 +45,7 @@ const getProfile = (value: IChzzkStreamer | undefined) => {
 
 const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   autoReconnect: true,
+  heartbeat: true,
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },

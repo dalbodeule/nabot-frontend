@@ -7,6 +7,7 @@ export interface IChzzkSession extends IChzzkStreamer {
   maxQueueSize: number,
   maxUserSize: number,
   isStreamerOnly: boolean,
+  isDisabled: boolean,
 }
 
 const streamer: Ref<IChzzkStreamer | undefined> | undefined = inject("USER")
