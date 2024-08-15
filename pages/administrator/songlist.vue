@@ -43,6 +43,7 @@ const music: Ref<string> = ref("")
 const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mori.space/songlist`, {
   autoReconnect: true,
   immediate: false,
+  heartbeat: true,
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },
