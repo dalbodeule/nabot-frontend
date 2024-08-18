@@ -3,6 +3,7 @@ import "@/assets/loading.scss"
 import type {Ref} from "vue";
 import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
 import {Status} from "assets/enums";
+import {defaultCommands} from "assets/tools";
 
 export interface ICommandType {
   label: string,
@@ -107,6 +108,23 @@ watchEffect(async () => {
       <div class="loading"/>
     </div>
     <div class="content">
+      <h2>기본 명령어</h2>
+      <div v-for="(command, index) in defaultCommands" :key="`def-${index}`" class="box">
+        <div class="field">
+          <label class="label">명령어 이름</label>
+          <div class="control">
+            <input v-model="command.label" class="input" type="text" disabled>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">명령어 내용</label>
+          <div class="control">
+            <input v-model="command.content" type="text" class="input" disabled>
+          </div>
+        </div>
+      </div>
+      <br />
+      <h2>스트리머 명령어</h2>
       <!-- 명령어 추가 버튼 (맨 위) -->
       <div class="buttons is-right">
         <button class="button is-primary" @click="addCommand">명령어 추가</button>

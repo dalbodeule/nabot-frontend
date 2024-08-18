@@ -3,7 +3,7 @@ import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import '@/assets/billboard.scss'
 import {SongType, Status} from "assets/enums";
-import {getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
+import {_PING_TIME, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 
 const route = useRoute()
@@ -22,7 +22,10 @@ definePageMeta({
 
 const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   autoReconnect: true,
-  heartbeat: true,
+  heartbeat: {
+    message: "ping",
+    interval: _PING_TIME,
+  },
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },
@@ -33,6 +36,9 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
     console.error("WebSocket error: ", event)
   },
   async onMessage(_ws, msg) {
+    if(msg.data == "pong") {
+      return
+    }
     const message = JSON.parse(msg.data) as ISongResponse
 
     switch (message.type) {

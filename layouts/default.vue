@@ -69,9 +69,9 @@ useHead({
             <div class="media">
               <div class="media-content">
                 <form @submit.prevent="registerChzzk">
-                  <h1>치지직 주소를 입력해 주세요!</h1>
+                  <h1>치지직 방송 주소(혹은 스튜디오 주소)를 입력해 주세요!</h1>
                   <div class="field">
-                    <label class="label">치지직 주소</label>
+                    <label class="label">치지직 방송(스튜디오) 주소</label>
                     <div class="control">
                       <input v-model="chzzkId" class="input" type="url" placeholder="https://chzzk.naver.com/">
                     </div>

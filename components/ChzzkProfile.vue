@@ -44,7 +44,7 @@ const config = useRuntimeConfig()
           <a
             class="subtitle is-6"
             :href="`https://chzzk.naver.com/live/${streamer.uid}`"
-          >바로가기</a>
+          >치지직 바로가기</a>
         </div>
       </div>
     </div>

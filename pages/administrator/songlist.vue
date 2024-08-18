@@ -2,7 +2,7 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, getYoutubeVideoId} from "@/assets/tools";
+import {_PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 import ChzzkProfileWithSession, {type IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
 
@@ -22,6 +22,8 @@ const config = useRuntimeConfig()
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkSession | undefined> | undefined = inject("USER")
 const list: Ref<ISong[]> = ref([])
+
+const { copy: copyText } = useClipboard()
 
 const autoPlay: Ref<boolean> = ref(true)
 const current: Ref<ISong | undefined> = ref()
@@ -43,7 +45,10 @@ const music: Ref<string> = ref("")
 const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mori.space/songlist`, {
   autoReconnect: true,
   immediate: false,
-  heartbeat: true,
+  heartbeat: {
+    message: "ping",
+    interval: _PING_TIME,
+  },
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },
@@ -54,6 +59,9 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
     console.error("WebSocket error: ", event)
   },
   async onMessage(_ws, msg) {
+    if(msg.data == "pong") {
+      return
+    }
     const message = JSON.parse(msg.data) as ISongResponse
 
     switch (message.type) {
@@ -340,7 +348,7 @@ watchEffect(async () => {
                   <label class="label">노래 위젯</label>
                 </div>
                 <div class="field-body">
-                  <div class="field">
+                  <div class="field has-addons">
                     <div class="control">
                       <input
                         :value="`https://nabot.mori.space/songwidget/${streamer?.uid ?? ''}`"
@@ -348,6 +356,13 @@ watchEffect(async () => {
                         class="input"
                         type="url"
                       >
+                    </div>
+                    <div class="control">
+                      <button
+                        type="button"
+                        class="button is-info"
+                        @click="copyText(`https://nabot.mori.space/songwidget/${streamer?.uid ?? ''}`)"
+                      >복사하기</button>
                     </div>
                   </div>
                 </div>

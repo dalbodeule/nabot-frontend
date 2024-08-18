@@ -2,7 +2,7 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
+import {_PING_TIME, formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
 
 export interface ISong {
   name: string,
@@ -45,7 +45,10 @@ const getProfile = (value: IChzzkStreamer | undefined) => {
 
 const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   autoReconnect: true,
-  heartbeat: true,
+  heartbeat: {
+    message: "ping",
+    interval: _PING_TIME,
+  },
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },
@@ -56,6 +59,9 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
     console.error("WebSocket error: ", event)
   },
   async onMessage(_ws, msg) {
+    if(msg.data == "pong") {
+      return
+    }
     const message = JSON.parse(msg.data) as ISongResponse
 
     switch (message.type) {
