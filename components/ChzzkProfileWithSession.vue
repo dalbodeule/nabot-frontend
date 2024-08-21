@@ -38,7 +38,7 @@ const streamer: Ref<IChzzkStreamer | undefined> | undefined = inject("USER")
             class="subtitle is-6"
             :href="`https://chzzk.naver.com/live/${streamer.uid}`"
             target="_blank"
-          >바로가기</a>
+          >치지직 바로가기</a>
         </div>
       </div>
     </div>

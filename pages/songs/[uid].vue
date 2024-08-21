@@ -2,7 +2,7 @@
 import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
-import {formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
+import {_PING_TIME, formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
 
 export interface ISong {
   name: string,
@@ -43,19 +43,41 @@ const getProfile = (value: IChzzkStreamer | undefined) => {
   })
 }
 
-const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
-  autoReconnect: true,
-  heartbeat: true,
+const getSongList = async() => {
+  try {
+    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
+      method: 'GET'
+    })
+    status.value = Status.DONE
+  } catch(e) {
+    console.error(`Error found! ${e ?? ""}`)
+    status.value = Status.ERROR
+  }
+}
+
+const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
+  autoReconnect: false,
+  heartbeat: {
+    message: "ping",
+    interval: _PING_TIME,
+  },
   onConnected: (_ws) => {
     console.log("WebSocket connected.")
   },
   onDisconnected(_ws) {
     console.log("WebSocket disconnected.")
+    setTimeout(async() => {
+      await getSongList()
+      open()
+    }, 500);
   },
   onError(_ws, event) {
     console.error("WebSocket error: ", event)
   },
   async onMessage(_ws, msg) {
+    if(msg.data == "pong") {
+      return
+    }
     const message = JSON.parse(msg.data) as ISongResponse
 
     switch (message.type) {
@@ -81,22 +103,16 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
         break
     }
   }
-
 })
+
+;(async() => {
+  await getSongList()
+  open()
+})()
 
 onBeforeUnmount(() => close())
 
-;(async() => {
-  try {
-    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
-      method: 'GET'
-    })
-    status.value = Status.DONE
-  } catch(e) {
-    console.error(`Error found! ${e ?? ""}`)
-    status.value = Status.ERROR
-  }
-})()
+
 </script>
 
 <template>

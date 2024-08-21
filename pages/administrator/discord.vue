@@ -33,16 +33,16 @@ export interface IGuild {
 }
 
 export interface IGuildSettings {
-  guildId: number | null,
-  channelId: number | null,
-  message: string,
+  guildId: string | null,
+  channelId: string | null,
+  message: string | null,
 }
 
 const guilds: Ref<IGuild[]> = ref([])
 const selectGuild: Ref<IGuildSettings> = ref({
-  guildId: 0,
-  channelId: 0,
-  message: '',
+  guildId: null,
+  channelId: null,
+  message: null,
 })
 const selectGuildIdx = ref(0)
 
@@ -90,8 +90,8 @@ const getDiscordStatus = async() => {
 
 const selectGuildId = async (id: number) => {
   selectGuildIdx.value = id
-  if(selectGuild.value) selectGuild.value.guildId = parseInt(guilds.value[id].id) ?? 0
-  else selectGuild.value = { guildId: parseInt(guilds.value[id].id), channelId:0, message: "" }
+  if(selectGuild.value) selectGuild.value.guildId = guilds.value[id].id
+  else selectGuild.value = { guildId: guilds.value[id].id, channelId: '', message: '' }
   isActive.value = false
 }
 
@@ -213,7 +213,7 @@ watchEffect(async () => {
                       <option
                         v-for="channel in guilds[selectGuildIdx]?.channel"
                         :key="`channel-${channel.id}`"
-                        :value="parseInt(channel.id)"
+                        :value="channel.id"
                       >
                         {{ channel?.name }}
                       </option>
