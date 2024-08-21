@@ -12,7 +12,6 @@ const uid = route.params.uid as string
 const config = useRuntimeConfig()
 
 const status: Ref<Status> = ref(Status.LOADING)
-const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 const list: Ref<ISong[]> = ref([])
 const current: Ref<ISong | undefined> = ref(undefined)
 
@@ -20,8 +19,25 @@ definePageMeta({
   layout: 'transparent'
 })
 
-const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
-  autoReconnect: true,
+useSeoMeta({
+  title: "Nabot :: SongWidget",
+  robots: false
+})
+
+const getSongList = async() => {
+  try {
+    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
+      method: 'GET'
+    })
+    status.value = Status.DONE
+  } catch(e) {
+    console.error(`Error found! ${e ?? ""}`)
+    status.value = Status.ERROR
+  }
+}
+
+const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
+  autoReconnect: false,
   heartbeat: {
     message: "ping",
     interval: _PING_TIME,
@@ -31,6 +47,10 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   },
   onDisconnected(_ws) {
     console.log("WebSocket disconnected.")
+    setTimeout(async() => {
+      await getSongList()
+      open()
+    }, 500);
   },
   onError(_ws, event) {
     console.error("WebSocket error: ", event)
@@ -70,21 +90,8 @@ const { close } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
 onBeforeUnmount(() => close())
 
 ;(async() => {
-  try {
-    streamer.value = await getChzzkUser(uid, config.public.backend_url)
-    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
-      method: 'GET'
-    })
-
-    useSeoMeta({
-      title: `nabot :: Music Widget :: ${streamer.value?.nickname ?? "??"}`,
-      robots: false,
-    })
-    status.value = Status.DONE
-  } catch(e) {
-    console.error(`Error found! ${e ?? ""}`)
-    status.value = Status.ERROR
-  }
+  await getSongList()
+  open()
 })()
 </script>
 

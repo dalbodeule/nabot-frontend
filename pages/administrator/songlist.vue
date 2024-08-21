@@ -214,6 +214,24 @@ const stateChanged = async(event: YT.OnStateChangeEvent, _target: YT.Player) => 
   }
 }
 
+const getSongList = async() => {
+  try {
+    if (streamer?.value?.uid != undefined) {
+        list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${streamer.value.uid}`, {
+          method: 'GET',
+          credentials: 'include'
+        })
+        open()
+        status.value = Status.DONE
+      } else {
+        status.value = Status.REQUIRE_LOGIN
+      }
+  } catch(e) {
+    console.error(`Error found! ${e ?? ""}`)
+    status.value = Status.ERROR
+  }
+}
+
 onBeforeUnmount(() => close())
 
 watchEffect(async () => {
@@ -224,22 +242,12 @@ watchEffect(async () => {
     streamerOnly.value = streamer?.value?.isStreamerOnly ?? false
 
     useSeoMeta({
-        title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
-        robots: false,
+      title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
+      robots: false,
     })
-
-    if (streamer?.value?.uid != undefined) {
-      list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${streamer.value.uid}`, {
-        method: 'GET',
-        credentials: 'include'
-      })
-      open()
-      status.value = Status.DONE
-    } else {
-      status.value = Status.REQUIRE_LOGIN
-    }
+    await getSongList()
   } catch(e) {
-    console.error(`Error found! ${e ?? ""}`)
+    console.error(e)
     status.value = Status.ERROR
   }
 })
@@ -375,7 +383,7 @@ watchEffect(async () => {
                   <button class="button is-success" type="button" @click="sendNextSignal">다음노래</button>
                 </div>
                 <div class="control">
-                  <button class="button" disabled>???</button>
+                  <button class="button is-warning" type="button" @click="getSongList">노래목록 강제 갱신</button>
                 </div>
               </div>
             </div>

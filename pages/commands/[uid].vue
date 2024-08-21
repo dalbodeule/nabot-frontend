@@ -73,21 +73,14 @@ useSeoMeta({
         <div class="field">
           <label class="label">명령어 이름</label>
           <div class="control">
-            <input v-model="command.label" class="input" type="text" placeholder="명령어 이름 입력">
+            <input v-model="command.label" class="input" type="text" disabled>
           </div>
         </div>
         <div class="field">
           <label class="label">명령어 내용</label>
           <div class="control">
-            <input v-model="command.content" type="text" class="input" placeholder="명령어 내용 입력">
+            <input v-model="command.content" type="text" class="input" disabled>
           </div>
-        </div>
-        <div class="field">
-          <label class="label">명령어 실패시 내용</label>
-          <div class="control">
-            <input v-model="command.failContent" type="text" class="input" placeholder="명령어 내용 입력">
-          </div>
-          <p class="help is-info">데일리 카운터에서 이미 사용한 유저가 보게 될 내용입니다.</p>
         </div>
       </div>
     </div>
