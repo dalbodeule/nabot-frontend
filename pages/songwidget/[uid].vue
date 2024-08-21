@@ -3,7 +3,7 @@ import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import '@/assets/billboard.scss'
 import {SongType, Status} from "assets/enums";
-import {_PING_TIME, getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
+import {_PING_TIME, getChzzkUser } from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
 
 const route = useRoute()

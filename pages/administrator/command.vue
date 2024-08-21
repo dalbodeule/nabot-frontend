@@ -123,7 +123,7 @@ watchEffect(async () => {
           </div>
         </div>
       </div>
-      <br />
+      <br >
       <h2>스트리머 명령어</h2>
       <!-- 명령어 추가 버튼 (맨 위) -->
       <div class="buttons is-right">
