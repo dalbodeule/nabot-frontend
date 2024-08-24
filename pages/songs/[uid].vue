@@ -7,19 +7,23 @@ import {_PING_TIME, formatSeconds, getChzzkUser, type IChzzkStreamer} from "@/as
 export interface ISong {
   name: string,
   author: string,
-  time: number,
-  reqName: string,
+  length: number,
+  reqName: string | null,
   url: string
 }
 
 export interface ISongResponse {
+  current: ISong | null,
+  next: ISong[] | null,
+}
+
+export interface ISongResponseWS {
   type: SongType,
   uid: string,
-  reqUid: string | null,
-  name: string | null,
-  author: string | null
-  time: number | null,
-  url: string | null,
+  reqUid: string | null
+  current: ISong | null,
+  next: ISong | null,
+  delUrl: string | null,
 }
 
 definePageMeta({
@@ -33,6 +37,7 @@ const config = useRuntimeConfig()
 const status: Ref<Status> = ref(Status.LOADING)
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined)
 const list: Ref<ISong[]> = ref([])
+const current: Ref<ISong | undefined> = ref()
 
 const getProfile = (value: IChzzkStreamer | undefined) => {
   streamer.value = value
@@ -45,9 +50,11 @@ const getProfile = (value: IChzzkStreamer | undefined) => {
 
 const getSongList = async() => {
   try {
-    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
+    const { current: cur, next } = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
       method: 'GET'
-    })
+    }) as ISongResponse
+    current.value = cur
+    list.value = next
     status.value = Status.DONE
   } catch(e) {
     console.error(`Error found! ${e ?? ""}`)
@@ -78,25 +85,35 @@ const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
     if(msg.data == "pong") {
       return
     }
-    const message = JSON.parse(msg.data) as ISongResponse
+    const message = JSON.parse(msg.data) as ISongResponseWS
 
     switch (message.type) {
       case SongType.ADD:
-        list.value.push({
-          name: message.name ?? "",
-          author: message.author ?? "",
-          time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
-          url: message.url ?? ""
-        })
+        if(message.next)
+          if(!list.value.filter((value) => {
+            return (value.url != message.delUrl)
+          }))
+          list.value.push({
+            name: message.next.name ?? "",
+            author: message.next?.author ?? "",
+            time: message.next?.length ?? 0,
+            reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
+            url: message.next.url ?? ""
+          })
+        if(message.current) {
+          current.value = message.current
+        }
         break
       case SongType.REMOVE:
+        await nextTick()
         list.value = list.value.filter((value) => {
-          return (value.url != message.url)
+          return (value.url != message.delUrl)
         })
         break
       case SongType.NEXT:
-        list.value.shift()
+        current.value = list.value.shift()
+        if(list.value[0].url == current.value.url)
+          list.value = []
         break
       case SongType.STREAM_OFF:
         list.value = []
