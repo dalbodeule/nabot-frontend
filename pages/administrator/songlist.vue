@@ -62,22 +62,27 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
     if(msg.data == "pong") {
       return
     }
-    const message = JSON.parse(msg.data) as ISongResponse
+    const message = JSON.parse(msg.data) as ISongResponseWS
 
     switch (message.type) {
       case SongType.ADD:
-        list.value.push({
-          name: message.name ?? "",
-          author: message.author ?? "",
-          time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
-          url: message.url ?? ""
-        })
+        if(message.next)
+          if(!list.value.filter((value) => {
+            return (value.url != message.delUrl)
+          }))
+          list.value.push({
+            name: message.next.name ?? "",
+            author: message.next.author ?? "",
+            time: message.next.length ?? 0,
+            reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
+            url: message.next.url ?? ""
+          })
         if(!isFirst.value && autoPlay.value && !current.value) sendNextSignal()
         break
       case SongType.REMOVE:
+        console.log(`remove: ${message.delUrl}`)
         list.value = list.value.filter((value) => {
-          return (value.url != message.url)
+          return (value.url != message.delUrl)
         })
         break
       case SongType.NEXT:
@@ -216,16 +221,18 @@ const stateChanged = async(event: YT.OnStateChangeEvent, _target: YT.Player) => 
 
 const getSongList = async() => {
   try {
-    if (streamer?.value?.uid != undefined) {
-        list.value = await useRequestFetch()(`https://api-nabot.mori.space/songs/${streamer.value.uid}`, {
-          method: 'GET',
-          credentials: 'include'
-        })
-        open()
-        status.value = Status.DONE
-      } else {
-        status.value = Status.REQUIRE_LOGIN
-      }
+    if (streamer?.value?.uid) {
+      const { current: cur, next } = await useRequestFetch()(`${config.public.backend_url}/songs/${streamer.value.uid}`, {
+        method: 'GET',
+        credentials: 'include'
+      }) as ISongResponse
+      if(next) list.value = next
+      if(cur && !current.value) current.value = cur
+      open()
+      status.value = Status.DONE
+    } else {
+      status.value = Status.REQUIRE_LOGIN
+    }
   } catch(e) {
     console.error(`Error found! ${e ?? ""}`)
     status.value = Status.ERROR
@@ -234,7 +241,7 @@ const getSongList = async() => {
 
 onBeforeUnmount(() => close())
 
-watchEffect(async () => {
+watch(streamer, async (_newValue, _oldValue) => {
   console.log(streamer?.value?.uid)
   try {
     queueSize.value = streamer?.value?.maxQueueSize ?? 50
@@ -245,11 +252,14 @@ watchEffect(async () => {
       title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
       robots: false,
     })
+
     await getSongList()
   } catch(e) {
     console.error(e)
     status.value = Status.ERROR
   }
+}, {
+  immediate: true
 })
 </script>
 

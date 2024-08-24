@@ -3,8 +3,8 @@ import {onBeforeUnmount, type Ref} from "vue"
 import '@/assets/loading.scss'
 import '@/assets/billboard.scss'
 import {SongType, Status} from "assets/enums";
-import {_PING_TIME, getChzzkUser } from "@/assets/tools";
-import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
+import {_PING_TIME, getChzzkUser} from "@/assets/tools";
+import type {ISong, ISongResponse, ISongResponseWS} from "~/pages/songs/[uid].vue";
 
 const route = useRoute()
 const uid = route.params.uid as string
@@ -26,9 +26,11 @@ useSeoMeta({
 
 const getSongList = async() => {
   try {
-    list.value = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
+    const { current: cur, next } = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
       method: 'GET'
-    })
+    }) as ISongResponse
+    if(next) list.value = next
+    if(cur) current.value = cur
     status.value = Status.DONE
   } catch(e) {
     console.error(`Error found! ${e ?? ""}`)
@@ -59,25 +61,35 @@ const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
     if(msg.data == "pong") {
       return
     }
-    const message = JSON.parse(msg.data) as ISongResponse
+    const message = JSON.parse(msg.data) as ISongResponseWS
 
     switch (message.type) {
       case SongType.ADD:
-        list.value.push({
-          name: message.name ?? "",
-          author: message.author ?? "",
-          time: message.time ?? 0,
-          reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
-          url: message.url ?? ""
-        })
+        if(message.next)
+          if(!list.value.filter((value) => {
+            return (value.url != message.delUrl)
+          }))
+          list.value.push({
+            name: message.next.name ?? "",
+            author: message.next?.author ?? "",
+            time: message.next?.length ?? 0,
+            reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
+            url: message.next.url ?? ""
+          })
+        if(message.current) {
+          current.value = message.current
+        }
         break
       case SongType.REMOVE:
+        await nextTick()
         list.value = list.value.filter((value) => {
-          return (value.url != message.url)
+          return (value.url != message.delUrl)
         })
         break
       case SongType.NEXT:
         current.value = list.value.shift()
+        if(list.value[0]?.url == current.value.url)
+          list.value = []
         break
       case SongType.STREAM_OFF:
         list.value = []
