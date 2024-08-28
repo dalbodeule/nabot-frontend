@@ -4,18 +4,20 @@ import "bulma/sass/themes/light.scss"
 
 import "@/assets/loading.scss"
 import type {Ref} from "vue";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 import {getSessionUser} from "assets/tools";
 import {Status} from "assets/enums";
 
 const config = useRuntimeConfig()
 
-const user: Ref<IChzzkSession | undefined> = ref(undefined)
+const user: Ref<IChzzkSession[] | undefined> = ref(undefined)
+const currentUser: Ref<number> = ref(0)
 const status: Ref<Status> = ref(Status.LOADING)
 
 const chzzkId: Ref<string> = ref("")
 
 provide("USER", user)
+provide("CURRENT_USER", currentUser)
 
 const registerChzzk = async () => {
   try {

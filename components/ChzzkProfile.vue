@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import "bulma/bulma.scss"
 import type {Ref} from "vue";
-import {getChzzkUser, type IChzzkStreamer} from "assets/tools";
+import {getChzzkUser, type IChzzkStreamer} from "@/assets/tools";
 
 const props = defineProps<{ uid: string }>()
 const emit = defineEmits<{

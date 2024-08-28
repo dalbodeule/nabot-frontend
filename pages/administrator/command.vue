@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import "@/assets/loading.scss"
 import type {Ref} from "vue";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 import {Status} from "assets/enums";
 import {defaultCommands} from "assets/tools";
 
@@ -16,7 +16,8 @@ const commands: Ref<ICommandType[]> = ref([])
 const status: Ref<Status> = ref(Status.LOADING)
 
 const config = useRuntimeConfig()
-const user: Ref<IChzzkSession | undefined> | undefined = inject("USER")
+const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
+const currentUser: Ref<number | undefined> = inject("CURRENT_USER", ref(0))
 
 definePageMeta({
   layout: 'administrator'
@@ -29,7 +30,7 @@ useSeoMeta({
 
 const getCommand = async () => {
   try {
-    const response = await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.uid}`, {
+    const response = await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.at(currentUser.value)?.uid}`, {
       method: 'GET',
       credentials: 'include'
     }) as { label: string, content: string, failContent: string }[]
@@ -57,7 +58,7 @@ const saveCommand = async (index: number) => {
     status.value = Status.LOADING
     if(p.isNew) {
       try {
-        await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.uid}`, {
+        await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.at(currentUser.value)?.uid}`, {
           method: 'PUT',
           credentials: 'include',
           body: JSON.stringify({label: p.label, content: p.content, failContent: p.failContent})
@@ -70,7 +71,7 @@ const saveCommand = async (index: number) => {
       }
     } else {
       try {
-        await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.uid}`, {
+        await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.at(currentUser.value)?.uid}`, {
           method: 'POST',
           credentials: 'include',
           body: JSON.stringify({label: p.label, content: p.content, failContent: p.failContent})
@@ -92,11 +93,21 @@ const saveCommand = async (index: number) => {
 
 
 const deleteCommand = async(index: number) => {
-  commands.value.splice(index, 1)
+  try {
+    const p = commands.value.splice(index, 1)
+    await useRequestFetch()(`${config.public.backend_url}/commands/${user?.value?.at(currentUser.value)?.uid}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      body: JSON.stringify({ label: p[0].label, content: p[0].content, failContent: p[0].failContent })
+    });
+
+  } catch(e) {
+    console.error(e)
+  }
 }
 
 watchEffect(async () => {
-  console.log(user?.value?.uid)
+  console.log(user?.value?.at(currentUser.value)?.uid)
   await getCommand()
   status.value = Status.DONE
 })

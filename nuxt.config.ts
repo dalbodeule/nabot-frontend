@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      backend_url: "http://localhost:8080"
+      backend_url: process.env.BACKEND_URL
     }
   },
   nitro: {

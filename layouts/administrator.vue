@@ -4,15 +4,19 @@ import "bulma/sass/themes/light.scss"
 
 import "@/assets/loading.scss"
 import type {Ref} from "vue";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
-import {getSessionUser} from "assets/tools";
-import {Status} from "assets/enums";
+import {getSessionUser} from "@/assets/tools";
+import {Status} from "@/assets/enums";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 
 const config = useRuntimeConfig()
 const route = useRoute()
 
-const user: Ref<IChzzkSession | undefined> = ref(undefined)
+const user: Ref<IChzzkSession[] | undefined> = ref(undefined)
+const currentUser: Ref<number> = ref(0)
 const status: Ref<Status> = ref(Status.LOADING)
+
+provide("USER", user)
+provide("CURRENT_USER", currentUser)
 
 ;(async() => {
   try {
@@ -27,8 +31,6 @@ const status: Ref<Status> = ref(Status.LOADING)
     }
   }
 })()
-
-provide("USER", user)
 
 useHead({
   htmlAttrs: {
@@ -50,6 +52,9 @@ useHead({
       <div class="container" style="margin-top: 20px; min-height: 80vh;">
         <div class="tabs">
           <ul>
+            <li :class="{ 'is-active': route.path === '/administrator'}">
+              <NuxtLink to="/administrator">유저 선택</NuxtLink>
+            </li>
             <li :class="{ 'is-active': route.path === '/administrator/command' }">
               <NuxtLink to="/administrator/command">명령어 설정</NuxtLink>
             </li>
@@ -59,8 +64,8 @@ useHead({
             <li :class="{ 'is-active': route.path === '/administrator/timer' }">
               <NuxtLink to="/administrator/timer">타이머 설정</NuxtLink>
             </li>
-            <li :class="{ 'is-active': route.path === '/administrator/songlist' }">
-              <NuxtLink to="/administrator/songlist">치수 플레이리스트</NuxtLink>
+            <li :class="{ 'is-active': route.path === '/administrator/songlist', disabled: currentUser > 0 }">
+              <NuxtLink to="/administrator/songlist" :disabled="currentUser > 0">치수 플레이리스트</NuxtLink>
             </li>
           </ul>
         </div>
