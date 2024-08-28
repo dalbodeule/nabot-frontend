@@ -5,7 +5,7 @@ import {Status} from "assets/enums";
 import ChzzkProfile from "~/components/ChzzkProfile.vue";
 
 const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
-const currentUser: Ref<number> = inject('CURRENT_USER', ref(0))
+const _currentUser: Ref<number> = inject('CURRENT_USER', ref(0))
 const status: Ref<Status> = ref(Status.LOADING)
 
 useSeoMeta({
@@ -31,6 +31,7 @@ useSeoMeta({
             <iframe
               src="https://discord.com/widget?id=1250093195870867577&theme=dark"
               height="500"
+              width="600"
               allowtransparency="true"
               frameborder="0"
               sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"

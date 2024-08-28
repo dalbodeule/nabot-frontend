@@ -14,7 +14,6 @@ const emit = defineEmits<{
   (e: 'profile', value: IChzzkStreamer | undefined): void
   (e: 'selected', value: number): void
 }>()
-const config = useRuntimeConfig()
 </script>
 
 <template>
@@ -43,7 +42,7 @@ const config = useRuntimeConfig()
             :href="`https://chzzk.naver.com/live/${profile.uid}`"
             target="_blank"
           >치지직 바로가기</a>
-          <button class="button is-warning" type="button" @click="emit('selected', idx)" style="margin-left: auto;">
+          <button class="button is-warning" type="button" style="margin-left: auto;" @click="emit('selected', idx)">
             유저 선택
           </button>
         </div>

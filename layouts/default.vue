@@ -11,7 +11,7 @@ import {Status} from "assets/enums";
 const config = useRuntimeConfig()
 
 const user: Ref<IChzzkSession[] | undefined> = ref(undefined)
-const currentUser: Ref<Number> = ref(0)
+const currentUser: Ref<number> = ref(0)
 const status: Ref<Status> = ref(Status.LOADING)
 
 const chzzkId: Ref<string> = ref("")
