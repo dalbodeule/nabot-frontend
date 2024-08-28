@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 
 const show: Ref<boolean> = ref(false)
-const user = inject("USER")
+const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
 
 const config = useRuntimeConfig()
 

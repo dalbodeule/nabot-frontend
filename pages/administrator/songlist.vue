@@ -4,7 +4,7 @@ import '@/assets/loading.scss'
 import {SongType, Status} from "assets/enums";
 import {_PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId} from "@/assets/tools";
 import type {ISong, ISongResponse} from "~/pages/songs/[uid].vue";
-import ChzzkProfileWithSession, {type IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import {type IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 
 export interface ISongRequest {
   type: SongType,
@@ -20,7 +20,8 @@ export interface ISongRequest {
 const config = useRuntimeConfig()
 
 const status: Ref<Status> = ref(Status.LOADING)
-const streamer: Ref<IChzzkSession | undefined> | undefined = inject("USER")
+const streamer: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
+const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))
 const list: Ref<ISong[]> = ref([])
 
 const { copy: copyText } = useClipboard()
@@ -67,9 +68,6 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
     switch (message.type) {
       case SongType.ADD:
         if(message.next)
-          if(!list.value.filter((value) => {
-            return (value.url != message.delUrl)
-          }))
           list.value.push({
             name: message.next.name ?? "",
             author: message.next.author ?? "",
@@ -109,7 +107,7 @@ const addMusic = async() => {
 
   const r: ISongRequest = {
     type: SongType.ADD,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url: music.value,
     maxQueue: null,
     maxUserLimit: null,
@@ -131,7 +129,7 @@ const sendNextSignal = () => {
 
   sendSignal({
     type: SongType.NEXT,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -144,7 +142,7 @@ const sendNextSignal = () => {
 const sendQueueSizeSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
     maxQueue: queueSize.value,
     maxUserLimit: null,
@@ -157,7 +155,7 @@ const sendQueueSizeSignal = () => {
 const sendPersonalSizeSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: personalSize.value,
@@ -170,7 +168,7 @@ const sendPersonalSizeSignal = () => {
 const sendStreamerOnlySignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -183,7 +181,7 @@ const sendStreamerOnlySignal = () => {
 const sendRemoveSignal = (id: number, url: string) => {
   sendSignal({
     type: SongType.REMOVE,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url,
     maxQueue: null,
     maxUserLimit: null,
@@ -196,7 +194,7 @@ const sendRemoveSignal = (id: number, url: string) => {
 const sendDisabledSignal = () => {
   sendSignal({
     type: SongType.OTHER,
-    uid: streamer?.value?.uid ?? "",
+    uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
     maxQueue: null,
     maxUserLimit: null,
@@ -221,7 +219,7 @@ const stateChanged = async(event: YT.OnStateChangeEvent, _target: YT.Player) => 
 
 const getSongList = async() => {
   try {
-    if (streamer?.value?.uid) {
+    if (streamer?.value?.at(0)?.uid) {
       const { current: cur, next } = await useRequestFetch()(`${config.public.backend_url}/songs/${streamer.value.uid}`, {
         method: 'GET',
         credentials: 'include'
@@ -242,14 +240,18 @@ const getSongList = async() => {
 onBeforeUnmount(() => close())
 
 watch(streamer, async (_newValue, _oldValue) => {
-  console.log(streamer?.value?.uid)
+  console.log(streamer?.value?.at(0)?.uid)
+  if(currentUser.value > 0) {
+    status.value = Status.DONE
+    return
+  }
   try {
-    queueSize.value = streamer?.value?.maxQueueSize ?? 50
-    personalSize.value = streamer?.value?.maxUserSize ?? 5
-    streamerOnly.value = streamer?.value?.isStreamerOnly ?? false
+    queueSize.value = streamer?.value?.at(0)?.maxQueueSize ?? 50
+    personalSize.value = streamer?.value?.at(0)?.maxUserSize ?? 5
+    streamerOnly.value = streamer?.value?.at(0)?.isStreamerOnly ?? false
 
     useSeoMeta({
-      title: `nabot :: Music manager :: ${streamer?.value?.nickname ?? "??"}`,
+      title: `nabot :: Music manager :: ${streamer?.value?.at(0)?.nickname ?? "??"}`,
       robots: false,
     })
 
@@ -271,11 +273,19 @@ watch(streamer, async (_newValue, _oldValue) => {
     <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
       <LoginBox url="https://nabot.mori.space/administrator/songlist" />
     </div>
+    <div v-else-if="currentUser > 0" class="page-overlay">
+      <div class="box">
+        <div class="content">
+          <p>치수 플레이리스트 기능은 본인만 접속이 가능합니다.</p>
+          <NuxtLink to="/administrator" class="button is-primary">돌아가기</NuxtLink>
+        </div>
+      </div>
+    </div>
     <div>
       <div class="fixed-grid">
         <div class="grid">
           <div class="cell">
-            <ChzzkProfileWithSession/>
+            <ChzzkProfile :uid="streamer?.at(0)?.uid"/>
             <div class="box">
               <div class="field is-horizontal">
                 <div class="field-label is-normal">

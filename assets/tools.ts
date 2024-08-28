@@ -1,4 +1,4 @@
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 
 export function formatSeconds(seconds: number): string {
     const hours = Math.floor(seconds / 3600)
@@ -26,7 +26,7 @@ export async function getChzzkUser(uid: string, url: string): Promise<IChzzkStre
 export async function getSessionUser(url: string) {
     return await useRequestFetch()(`${url}/user`, {
         credentials: 'include',
-    }) as IChzzkSession | undefined
+    }) as IChzzkSession[] | undefined
 }
 
 const regex = /.*(?:youtu.be\/|v\/|u\/\\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/

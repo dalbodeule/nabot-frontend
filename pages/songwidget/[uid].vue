@@ -117,7 +117,7 @@ onBeforeUnmount(() => close())
         <span>지금 노래: {{ current?.url ? `${current?.name} - ${current?.author}` : "노래 정보가 없습니다." }} </span>
       </div>
       <div id="nextSong" class="song">
-        <span>다음 노래: {{ list[0]?.url ? `${list[0]?.name} - ${list[0]?.author}` : "노래 정보가 없습니다." }}</span>
+        <span>다음 노래: {{ list?.at(0)?.url ? `${list?.at(0)?.name} - ${list?.at(0)?.author}` : "노래 정보가 없습니다." }}</span>
       </div>
     </div>
   </div>

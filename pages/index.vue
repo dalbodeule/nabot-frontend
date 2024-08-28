@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type {Ref} from "vue";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 import {Status} from "assets/enums";
+import ChzzkProfile from "~/components/ChzzkProfile.vue";
 
-const user: Ref<IChzzkSession | undefined> | undefined = inject("USER")
+const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
+const currentUser: Ref<number> = inject('CURRENT_USER', ref(0))
 const status: Ref<Status> = ref(Status.LOADING)
 
 useSeoMeta({
@@ -36,7 +38,7 @@ useSeoMeta({
           </div>
           <div class="cell">
             <template v-if="user">
-              <ChzzkProfileWithSession />
+              <ChzzkProfile :uid="user?.at(0)?.uid"/>
             </template>
             <template v-else>
               <LoginBox url="https://nabot.mori.space/"/>

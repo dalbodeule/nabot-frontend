@@ -27,7 +27,7 @@
     "@nuxt/scripts": "^0.6.5",
     "@vueuse/core": "^10.11.0",
     "@vueuse/nuxt": "^10.11.0",
-    "nuxt": "^3.12.4",
+    "nuxt": "^3.13.0",
     "nuxt-purgecss": "^2.0.0",
     "sass": "^1.77.8",
     "sass-loader": "^16.0.0",

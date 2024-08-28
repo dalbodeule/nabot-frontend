@@ -2,7 +2,7 @@
 
 import type {Ref} from "vue";
 import {Status, TimerType} from "assets/enums";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 
 definePageMeta({
   layout: 'administrator'
@@ -13,7 +13,8 @@ const options: Ref<TimerType> = ref(TimerType.REMOVE)
 const status: Ref<Status> = ref(Status.LOADING)
 
 const config = useRuntimeConfig()
-const user: Ref<IChzzkSession | undefined> | undefined = inject("USER")
+const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
+const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))
 
 definePageMeta({
   layout: 'administrator'
@@ -26,7 +27,7 @@ useSeoMeta({
 
 const getTimer = async() => {
   try {
-    const response = await useRequestFetch()(`${config.public.backend_url}/timerapi/${user?.value?.uid}`, {
+    const response = await useRequestFetch()(`${config.public.backend_url}/timerapi/${user?.value?.at(currentUser.value)?.uid}`, {
       method: 'GET',
       credentials: 'include'
     }) as { option: number }
@@ -42,7 +43,7 @@ const setTimer = async() => {
   try {
     status.value = Status.LOADING
 
-    await useRequestFetch()(`${config.public.backend_url}/timerapi/${user?.value?.uid}`, {
+    await useRequestFetch()(`${config.public.backend_url}/timerapi/${user?.value?.at(currentUser.value)?.uid}`, {
       method: 'PUT',
       credentials: 'include',
       body: JSON.stringify({ option: options.value })
@@ -91,15 +92,28 @@ watchEffect(async () => {
       </div>
     </div>
     <div class="content">
-      <h1 class="title">타이머 미리보기</h1>
-      <iframe
-        :id="user?.uid"
-        :src="`https://nabot.mori.space/timer/${user?.uid}`"
-        frameborder="0"
-        allowfullscreen
-        width="800"
-        height="600"
-      />
+      <h1 class="title">타이머 위젯 URL</h1>
+      <div class="field">
+        <div class="control">
+          <div class="field has-addons">
+            <div class="control">
+              <input
+                  :value="`https://nabot.mori.space/timer/${streamer?.at(currentUser)?.uid ?? ''}`"
+                  disabled
+                  class="input is-fullwidth"
+                  type="url"
+              >
+            </div>
+            <div class="control">
+              <button
+                  type="button"
+                  class="button is-info"
+                  @click="copyText(`https://nabot.mori.space/timer/${streamer?.at(currentUser)?.uid ?? ''}`)"
+              >복사하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

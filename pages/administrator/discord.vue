@@ -2,7 +2,7 @@
 
 import type {Ref} from "vue";
 import {Status} from "assets/enums";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithSession.vue";
+import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {getGuildBannerUrl, getGuildIconUrl} from "assets/tools";
 
@@ -50,7 +50,8 @@ const status: Ref<Status> = ref(Status.LOADING)
 const isActive = ref(false)
 
 const config = useRuntimeConfig()
-const user: Ref<IChzzkSession | undefined> | undefined = inject("USER")
+const user: Ref<IChzzkSession | undefined> = inject("USER", ref(undefined))
+const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))
 
 definePageMeta({
   layout: 'administrator'
@@ -63,12 +64,12 @@ useSeoMeta({
 
 const getDiscordStatus = async() => {
   try {
-    guilds.value = await useRequestFetch()(`${config.public.backend_url}/discord`, {
+    guilds.value = await useRequestFetch()(`${config.public.backend_url}/discord/guilds`, {
       method: 'GET',
       credentials: 'include'
     })
 
-    selectGuild.value = await useRequestFetch()(`${config.public.backend_url}/discord/${user?.value?.uid}`, {
+    selectGuild.value = await useRequestFetch()(`${config.public.backend_url}/discord/${user?.value?.at(currentUser.value)?.uid}`, {
       method: 'GET',
       credentials: 'include'
     }) as IGuildSettings
