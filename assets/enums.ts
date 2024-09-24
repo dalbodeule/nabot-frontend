@@ -14,6 +14,7 @@ export enum SongType {
     NEXT = 2,
 
     STREAM_OFF = 50,
+    ACK = 51,
 
     OTHER = 100
 }
