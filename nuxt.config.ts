@@ -1,6 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2024-04-03',
+  compatibilityDate: '2024-10-01',
+  srcDir: '.',
+  dir: {
+    app: 'app'
+  },
   devtools: { enabled: true },
   build: {
     transpile: [ 'Dayjs' ]
@@ -11,7 +15,10 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    preset: 'cloudflare-module'
+    preset: 'cloudflare-module',
+    prerender: {
+      autoSubfolderIndex: false
+    }
   },
   css: [
     '@fortawesome/fontawesome-svg-core/styles.css',

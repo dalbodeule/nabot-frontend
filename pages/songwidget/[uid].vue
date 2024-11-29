@@ -72,7 +72,7 @@ const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
           list.value.push({
             name: message.next.name ?? "",
             author: message.next?.author ?? "",
-            time: message.next?.length ?? 0,
+            length: message.next?.length ?? 0,
             reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
             url: message.next.url ?? ""
           })
@@ -88,7 +88,7 @@ const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
         break
       case SongType.NEXT:
         current.value = list.value.shift()
-        if(list.value[0]?.url == current.value.url)
+        if(list.value[0]?.url == current.value?.url)
           list.value = []
         break
       case SongType.STREAM_OFF:

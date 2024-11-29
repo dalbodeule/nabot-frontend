@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import "bulma/bulma.scss"
-import {type IChzzkStreamer} from "@/assets/tools";
+import type {IChzzkStreamer} from "@/assets/tools";
 
 export interface IChzzkSession extends IChzzkStreamer {
   maxQueueSize: number,

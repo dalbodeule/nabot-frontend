@@ -46,7 +46,7 @@ export function getGuildBannerUrl(guildId: string, bannerHash: string) {
     return `https://cdn.discordapp.com/banners/${guildId}/${bannerHash}.png`
 }
 
-export const _PING_TIME = 50 * 1000
+export const _PING_TIME = 30 * 1000
 
 export const defaultCommands: {label: string, content: string }[] = [
     {label: "!명령어", content: "명령어 목록을 확인합니다."},
@@ -58,3 +58,5 @@ export const defaultCommands: {label: string, content: string }[] = [
     {label: '!노래목록', content: '플레이리스트 페이지로 이동합니다.'},
     {label: '!노래시작', content: '치수 플레이리스트 관리페이지로 이동합니다.'},
 ]
+
+export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

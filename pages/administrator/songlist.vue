@@ -2,9 +2,9 @@
 import { onBeforeUnmount, type Ref } from "vue";
 import '@/assets/loading.scss';
 import { SongType, Status } from "assets/enums";
-import { _PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId } from "@/assets/tools";
+import {_PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId, wait} from "@/assets/tools";
 import type { ISong, ISongResponse, ISongResponseWS } from "~/pages/songs/[uid].vue";
-import { type IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
+import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 
 export interface ISongRequest {
   type: SongType,
@@ -37,6 +37,10 @@ const streamerOnly = ref(false);
 const isDisabled = ref(false);
 const isFirst = ref(true);
 
+const isLoading = ref(false);
+
+const maxRetries = 5;
+
 definePageMeta({
   layout: 'administrator'
 });
@@ -64,14 +68,16 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
       return;
     }
     const message = JSON.parse(msg.data) as ISongResponseWS;
+    isLoading.value = false;
 
     switch (message.type) {
       case SongType.ADD:
         if (message.next) {
+          if(list.value.filter((value) => value.url == message.next?.url).length > 0) break;
           list.value.push({
             name: message.next.name ?? "",
             author: message.next.author ?? "",
-            time: message.next.length ?? 0,
+            length: message.next.length ?? 0,
             reqName: (await getChzzkUser(message.reqUid!, config.public.backend_url)).nickname ?? "",
             url: message.next.url ?? ""
           });
@@ -101,7 +107,7 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
     }
 
     // 모든 처리가 완료된 후 ACK 응답 전송
-    sendAcknowledgment(message.url);
+    sendAcknowledgment(message.current?.url ?? "");
   }
 });
 
@@ -146,6 +152,7 @@ const addMusic = async () => {
 
 const sendNextSignal = () => {
   if (isFirst.value) isFirst.value = false;
+  isLoading.value = true;
 
   sendSignal({
     type: SongType.NEXT,
@@ -225,8 +232,33 @@ const sendDisabledSignal = () => {
 }
 
 const sendSignal = (r: ISongRequest) => {
-  if (WSStatus.value === "OPEN") {
+  // 메시지를 전송하는 함수
+  if (WSStatus.value === 'OPEN') {
     send(JSON.stringify(r));
+  } else {
+    // 재시도 로직 시작
+    let retries = 0;
+    const message = JSON.stringify(r);
+
+    const retrySend = async () => {
+      while (retries < maxRetries) {
+        await wait(100); // 100ms 대기
+
+        if (WSStatus.value === 'OPEN') {
+          send(message); // 메시지 전송
+          console.log("Message sent successfully.");
+          return; // 메시지 전송 후 함수를 종료
+        }
+
+        retries++;
+      }
+
+      // 재시도 후 실패 시 에러 메시지 표시
+      console.error(`Failed to send message after ${maxRetries} attempts.`);
+      alert("Unable to send the message. WebSocket is still not open.");
+    };
+
+    retrySend(); // 재시도 함수 호출
   }
 };
 
@@ -277,7 +309,7 @@ watch(streamer, async (_newValue, _oldValue) => {
       robots: false,
     });
 
-    await getSongList(streamer?.value?.at(0)?.uid);
+    await getSongList(streamer?.value?.at(0)?.uid ?? "");
   } catch (e) {
     console.error(e);
     status.value = Status.ERROR;
@@ -307,7 +339,7 @@ watch(streamer, async (_newValue, _oldValue) => {
       <div class="fixed-grid">
         <div class="grid">
           <div class="cell">
-            <ChzzkProfile :uid="streamer?.at(0)?.uid" />
+            <ChzzkProfile :uid="streamer?.at(0)?.uid ?? ''" />
             <div class="box">
               <div class="field is-horizontal">
                 <div class="field-label is-normal">
@@ -319,7 +351,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <input v-model="music" class="input" type="url" placeholder="https://youtube.com/watch?v=" >
                     </div>
                     <div class="control">
-                      <button type="button" class="button" :disabled="!music" @click="addMusic">신청하기</button>
+                      <button type="button" class="button" :disabled="!music || WSStatus != 'OPEN'" @click="addMusic">신청하기</button>
                     </div>
                   </div>
                 </div>
@@ -334,7 +366,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <input v-model="queueSize" class="input" type="number" placeholder="노래목록 크기">
                     </div>
                     <div class="control">
-                      <button type="button" class="button" :disabled="!queueSize" @click="sendQueueSizeSignal">저장</button>
+                      <button type="button" class="button" :disabled="!queueSize || WSStatus != 'OPEN'" @click="sendQueueSizeSignal">저장</button>
                     </div>
                   </div>
                 </div>
@@ -349,7 +381,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <input v-model="personalSize" class="input" type="number" placeholder="개인 신청제한">
                     </div>
                     <div class="control">
-                      <button type="button" class="button" :disabled="!personalSize" @click="sendPersonalSizeSignal">저장</button>
+                      <button type="button" class="button" :disabled="!personalSize || WSStatus != 'OPEN'" @click="sendPersonalSizeSignal">저장</button>
                     </div>
                   </div>
                 </div>
@@ -361,7 +393,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                 <div class="field-body">
                   <div class="field">
                     <div class="control">
-                      <input v-model="streamerOnly" type="checkbox" @click="sendStreamerOnlySignal">
+                      <input v-model="streamerOnly" type="checkbox" :disabled="WSStatus != 'OPEN'" @click="sendStreamerOnlySignal">
                       활성화시 매니저 이상 신청가능
                     </div>
                   </div>
@@ -374,7 +406,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                 <div class="field-body">
                   <div class="field">
                     <div class="control">
-                      <input v-model="isDisabled" type="checkbox" @click="sendDisabledSignal">
+                      <input v-model="isDisabled" type="checkbox" :disabled="WSStatus != 'OPEN'" @click="sendDisabledSignal">
                       신청곡 기능을 비활성화 합니다.
                     </div>
                   </div>
@@ -401,7 +433,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                   <div class="field has-addons">
                     <div class="control">
                       <input
-                          :value="`https://nabot.mori.space/songwidget/${streamer?.uid ?? ''}`"
+                          :value="`https://nabot.mori.space/songwidget/${streamer?.at(0)?.uid ?? ''}`"
                           disabled
                           class="input"
                           type="url"
@@ -411,7 +443,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <button
                           type="button"
                           class="button is-info"
-                          @click="copyText(`https://nabot.mori.space/songwidget/${streamer?.uid ?? ''}`)"
+                          @click="copyText(`https://nabot.mori.space/songwidget/${streamer?.at(0)?.uid ?? ''}`)"
                       >복사하기</button>
                     </div>
                   </div>
@@ -419,13 +451,13 @@ watch(streamer, async (_newValue, _oldValue) => {
               </div>
               <div class="field is-grouped is-grouped-right">
                 <div v-if="isFirst" class="control">
-                  <button class="button is-success" type="button" @click="sendNextSignal">노래시작</button>
+                  <button class="button is-success" type="button" :disabled="WSStatus != 'OPEN'" @click="sendNextSignal">노래시작</button>
                 </div>
                 <div v-else class="control">
-                  <button class="button is-success" type="button" @click="sendNextSignal">다음노래</button>
+                  <button class="button is-success" type="button" :disabled="WSStatus != 'OPEN'" @click="sendNextSignal">다음노래</button>
                 </div>
                 <div class="control">
-                  <button class="button is-warning" type="button" @click="getSongList">노래목록 강제 갱신</button>
+                  <button class="button is-warning" type="button" @click="getSongList(streamer?.at(0)?.uid ?? '')">노래목록 강제 갱신</button>
                 </div>
               </div>
             </div>
@@ -464,7 +496,7 @@ watch(streamer, async (_newValue, _oldValue) => {
           <td>{{ song.name }}</td>
           <td>{{ song.author }}</td>
           <td>{{ song.reqName }}</td>
-          <td>{{ formatSeconds(song.time) }}</td>
+          <td>{{ formatSeconds(song.length) }}</td>
           <td>
             <button type="button" class="button is-danger is-small" @click="sendRemoveSignal(key, song.url)">!</button>
           </td>
