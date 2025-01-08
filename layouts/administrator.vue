@@ -55,6 +55,9 @@ useHead({
             <li :class="{ 'is-active': route.path === '/administrator'}">
               <NuxtLink to="/administrator">유저 선택</NuxtLink>
             </li>
+            <li :class="{ 'is-active': route.path === '/administrator/settings' }">
+              <NuxtLink to="/administrator/settings">기본 설정</NuxtLink>
+            </li>
             <li :class="{ 'is-active': route.path === '/administrator/command' }">
               <NuxtLink to="/administrator/command">명령어 설정</NuxtLink>
             </li>

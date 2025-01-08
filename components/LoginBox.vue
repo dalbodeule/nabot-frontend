@@ -11,10 +11,10 @@ const config = useRuntimeConfig()
           class="button is-align-self-center"
           :href="`${config.public.backend_url}/auth/login?redirectUrl=${props.url}`"
           target="_self"
-          style="color: #ffffff; background-color: #03c75a;"
+          style="color: #ffffff; background-color: #000000;"
       >
         <img src="@/public/naver-logo.png" style="height: 20px;">
-        &nbsp;Naver 아이디로 로그인
+        &nbsp;치지직 아이디로 로그인
       </a>
     </div>
   </div>

@@ -32,10 +32,10 @@ const config = useRuntimeConfig()
           class="button is-align-self-center navbar-item"
           :href="`${config.public.backend_url}/auth/login`"
           target="_self"
-          style="color: #ffffff; background-color: #03c75a;"
+          style="color: #ffffff; background-color: #000000;"
       >
-        <img src="@/public/naver-logo.png" style="height: 20px;">
-        &nbsp;Naver 아이디로 로그인
+        <img src="@/public/naver-logo.png" style="height: 20px;" alt="">
+         치지직 아이디로 로그인
       </a>
       </div>
       <div v-else class="navbar-end">
