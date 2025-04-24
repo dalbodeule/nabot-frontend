@@ -5,6 +5,7 @@ import { SongType, Status } from "assets/enums";
 import {_PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId, wait} from "@/assets/tools";
 import type { ISong, ISongResponse, ISongResponseWS } from "~/pages/songs/[uid].vue";
 import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
+import YouTube from "vue3-youtube"
 
 export interface ISongRequest {
   type: SongType,
@@ -464,11 +465,10 @@ watch(streamer, async (_newValue, _oldValue) => {
           </div>
           <div class="cell">
             <div class="box">
-              <ScriptYouTubePlayer
+              <YouTube
                   v-if="showPlayer"
                   :key="youtubeId"
-                  trigger="immediate"
-                  :video-id="youtubeId"
+                  :src="`https://www.youtube.com/watch?v=${youtubeId}`"
                   :player-vars="{ autoplay: autoPlay ? 1 : 0 }"
                   @ready="readyEvent"
                   @state-change="stateChanged"

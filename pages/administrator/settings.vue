@@ -19,7 +19,7 @@ const options: Ref<IUserSettingsDTO> = ref({
 })
 
 const config = useRuntimeConfig()
-const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
+const _user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
 const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))
 
 definePageMeta({

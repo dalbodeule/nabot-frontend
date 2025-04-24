@@ -17,21 +17,21 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.1",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@pinia/nuxt": "^0.7.0",
-    "@vue-youtube/core": "^0.0.6",
     "bulma": "^1.0.2",
     "dayjs": "^1.11.13",
-    "vue": "latest"
+    "vue": "latest",
+    "vue3-youtube": "^0.1.9"
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.7.1",
     "@nuxt/scripts": "^0.9.5",
     "@vueuse/core": "^10.11.1",
     "@vueuse/nuxt": "^10.11.1",
-    "nuxt": "^3.14.1592",
+    "nuxt": "^3.16.2",
     "nuxt-purgecss": "^2.0.0",
     "sass": "^1.81.0",
     "sass-loader": "^16.0.3",
-    "wrangler": "^3.90.0",
+    "wrangler": "^4.13.0",
     "zod": "^3.23.8"
   }
 }
