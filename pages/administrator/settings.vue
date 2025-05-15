@@ -3,10 +3,6 @@ import type { Ref } from "vue";
 import { Status } from "assets/enums";
 // import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 
-definePageMeta({
-  layout: "administrator",
-});
-
 export interface IUserSettingsDTO {
   isBotDisabled: boolean;
   isBotMsgDisabled: boolean;

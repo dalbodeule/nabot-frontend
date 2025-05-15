@@ -5,10 +5,6 @@ import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { getGuildBannerUrl, getGuildIconUrl } from "assets/tools";
 
-definePageMeta({
-  layout: "administrator",
-});
-
 export interface IGuildChannel {
   id: string;
   type: number;
