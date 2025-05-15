@@ -11,7 +11,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      backend_url: process.env.BACKEND_URL
+      backend_url: process.env.BACKEND_URL,
+      frontend_url: process.env.FRONTEND_URL,
     }
   },
   nitro: {

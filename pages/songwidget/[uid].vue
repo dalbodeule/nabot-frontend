@@ -20,7 +20,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: "Nabot :: SongWidget",
+  title: "Chibot :: SongWidget",
   robots: false
 })
 
@@ -38,7 +38,7 @@ const getSongList = async() => {
   }
 }
 
-const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
+const { close, open } = useWebSocket(`wss://${config.public.backend_url.replace("https://", "")}/song/${uid}`, {
   autoReconnect: false,
   heartbeat: {
     message: "ping",

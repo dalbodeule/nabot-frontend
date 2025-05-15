@@ -45,7 +45,7 @@ useHead({
       <div class="loading"/>
     </div>
     <div v-if="status == Status.ERROR" class="page-overlay">
-      <LoginBox url="https://nabot.mori.space/"/>
+      <LoginBox :url="config.public.frontend_url"/>
     </div>
     <div style="width: 100%; height: 100%;">
       <SiteHeader />

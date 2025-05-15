@@ -21,7 +21,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: "Nabot :: administrator :: Timer",
+  title: "Chibot :: administrator :: Timer",
   robots: false
 })
 
@@ -98,7 +98,7 @@ watchEffect(async () => {
           <div class="field has-addons">
             <div class="control">
               <input
-                  :value="`https://nabot.mori.space/timer/${streamer?.at(currentUser)?.uid ?? ''}`"
+                  :value="`${config.public.frontend_url}/timer/${streamer?.at(currentUser)?.uid ?? ''}`"
                   disabled
                   class="input is-fullwidth"
                   type="url"
@@ -108,7 +108,7 @@ watchEffect(async () => {
               <button
                   type="button"
                   class="button is-info"
-                  @click="copyText(`https://nabot.mori.space/timer/${streamer?.at(currentUser)?.uid ?? ''}`)"
+                  @click="copyText(`${config.public.frontend_url}/timer/${streamer?.at(currentUser)?.uid ?? ''}`)"
               >복사하기</button>
             </div>
           </div>

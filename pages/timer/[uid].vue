@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import { useWebSocket } from "@vueuse/core"
 
 const route = useRoute()
+const config = useRuntimeConfig()
 
 enum TimerType {
   UPTIME = 0,
@@ -38,11 +39,11 @@ definePageMeta({
   layout: 'transparent'
 })
 useSeoMeta({
-  title: `nabot :: Timer on ${uid}`,
+  title: `Chibot :: Timer on ${uid}`,
   robots: false
 })
 
-const { close } = useWebSocket(`wss://api-nabot.mori.space/timer/${uid}`, {
+const { close } = useWebSocket(`wss://${config.public.backend_url.replace("https://", "")}/timer/${uid}`, {
   autoReconnect: true,
   onError(ws, event) {
     console.error("WebSocket error: ", event)

@@ -6,6 +6,10 @@
   definePageMeta({
     layout: 'administrator'
   })
+  useSeoMeta({
+    title: "Chibot :: administrator :: SelectUser",
+    robots: false
+  })
 
   const users: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
   const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))

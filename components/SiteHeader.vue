@@ -13,7 +13,7 @@ const config = useRuntimeConfig()
   <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <NuxtLink class="navbar-item" to="/">
-        <img src="~/public/favicon.png" alt="">&nbsp; 나봇
+        <img src="~/public/favicon.png" alt="">&nbsp; 치봇
       </NuxtLink>
     </div>
     <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="show = !show">

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, type Ref } from "vue";
+import { onBeforeUnmount, type Ref, watch, nextTick } from "vue";
 import '@/assets/loading.scss';
 import { SongType, Status } from "assets/enums";
-import {_PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId, wait} from "@/assets/tools";
+import { _PING_TIME, formatSeconds, getChzzkUser, getYoutubeVideoId, wait } from "@/assets/tools";
 import type { ISong, ISongResponse, ISongResponseWS } from "~/pages/songs/[uid].vue";
 import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
-import YouTube from "vue3-youtube"
+import YouTube from "vue3-youtube";
 
 export interface ISongRequest {
   type: SongType,
@@ -19,63 +19,60 @@ export interface ISongRequest {
 }
 
 const config = useRuntimeConfig();
-
 const status: Ref<Status> = ref(Status.LOADING);
 const streamer: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
-const currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
-const list: Ref<ISong[]> = ref([]);
-
+const currentUserId: Ref<number> = inject("CURRENT_USER", ref(0));
+const songQueue: Ref<ISong[]> = ref([]);
 const { copy: copyText } = useClipboard();
-
 const autoPlay: Ref<boolean> = ref(true);
 const current: Ref<ISong | undefined> = ref();
-
 const youtubeId: Ref<string> = ref("");
 const showPlayer: Ref<boolean> = ref(false);
 const queueSize = ref(50);
 const personalSize = ref(5);
 const streamerOnly = ref(false);
 const isDisabled = ref(false);
-const isFirst = ref(true);
-
-const isLoading = ref(false);
-
-const maxRetries = 5;
+const isFirstPlay = ref(true);
+const isDataLoading = ref(false);
 
 definePageMeta({
   layout: 'administrator'
 });
 
-const music: Ref<string> = ref("");
+const newSongUrl: Ref<string> = ref("");
 
-const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mori.space/songlist`, {
+const {
+  send,
+  status: webSocketStatus,
+  close,
+  open
+} = useWebSocket(`wss://${config.public.backend_url.replace("https://", "")}/songlist`, {
   autoReconnect: true,
   immediate: false,
   heartbeat: {
     message: "ping",
     interval: _PING_TIME,
   },
-  onConnected: (_ws) => {
+  onConnected: (ws) => {
     console.log("WebSocket connected.");
   },
-  onDisconnected(_ws) {
+  onDisconnected(ws) {
     console.log("WebSocket disconnected.");
   },
-  onError(_ws, event) {
+  onError(ws, event) {
     console.error("WebSocket error: ", event);
   },
-  async onMessage(_ws, msg) {
-    if (msg.data === "pong") {
-      return;
-    }
-    const message = JSON.parse(msg.data) as ISongResponseWS;
-    isLoading.value = false;
+  async onMessage(ws, wsMessage) {
+    if (wsMessage.data === "pong") return;
+
+    const message = JSON.parse(wsMessage.data) as ISongResponseWS;
+    isDataLoading.value = false;
 
     switch (message.type) {
       case SongType.ADD:
         if (message.next) {
-          if(list.value.filter((value) => value.url == message.next?.url).length > 0) break;
-          list.value.push({
+          if (songQueue.value.some((value) => value.url === message.next?.url)) break;
+          songQueue.value.push({
             name: message.next.name ?? "",
             author: message.next.author ?? "",
             length: message.next.length ?? 0,
@@ -83,58 +80,57 @@ const { send, status: WSStatus, close, open } = useWebSocket(`wss://api-nabot.mo
             url: message.next.url ?? ""
           });
         }
-        if (!isFirst.value && autoPlay.value && !current.value) sendNextSignal();
+        if (!isFirstPlay.value && autoPlay.value && !current.value) sendNextSignal();
         break;
-
       case SongType.REMOVE:
         console.log(`remove: ${message.delUrl}`);
-        list.value = list.value.filter((value) => {
-          return (value.url != message.delUrl);
-        });
+        songQueue.value = songQueue.value.filter((value) => value.url !== message.delUrl);
         break;
-
       case SongType.NEXT:
-        current.value = list.value.shift();
+        current.value = songQueue.value.shift();
         showPlayer.value = false;
         youtubeId.value = getYoutubeVideoId(current.value?.url ?? "") ?? "";
         console.log(`NEXT: ${current.value?.name} - ${current.value?.author}`);
         await nextTick();
         if (youtubeId.value) showPlayer.value = true;
         break;
-
       case SongType.STREAM_OFF:
-        list.value = [];
+        songQueue.value = [];
         break;
     }
-
-    // 모든 처리가 완료된 후 ACK 응답 전송
-    sendAcknowledgment(message.current?.url ?? "");
+    await sendAcknowledgment();
   }
 });
 
-// ACK 응답을 전송하는 함수
-const sendAcknowledgment = (url: string | null) => {
+const awaitWebSocketConnection = async () => {
+  while (webSocketStatus.value !== "OPEN") {
+    await wait(500);
+  }
+};
+
+const sendAcknowledgment = async () => {
   const ackRequest: ISongRequest = {
     type: SongType.ACK,
     uid: streamer?.value?.at(0)?.uid ?? "",
-    url: url ?? "",
+    url: null,
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: null,
     remove: null,
     isDisabled: null,
   };
+  await awaitWebSocketConnection();
   send(JSON.stringify(ackRequest));
 };
 
 const addMusic = async () => {
-  if (!music.value) return;
+  if (!newSongUrl.value) return;
   status.value = Status.LOADING;
 
-  const r: ISongRequest = {
+  const request: ISongRequest = {
     type: SongType.ADD,
     uid: streamer?.value?.at(0)?.uid ?? "",
-    url: music.value,
+    url: newSongUrl.value,
     maxQueue: null,
     maxUserLimit: null,
     isStreamerOnly: null,
@@ -142,20 +138,16 @@ const addMusic = async () => {
     isDisabled: null,
   };
 
-  music.value = "";
-
-  if (WSStatus.value === "OPEN") {
-    send(JSON.stringify(r));
-  }
-
+  newSongUrl.value = "";
+  await awaitWebSocketConnection();
+  send(JSON.stringify(request));
   status.value = Status.DONE;
 };
 
 const sendNextSignal = () => {
-  if (isFirst.value) isFirst.value = false;
-  isLoading.value = true;
-
-  sendSignal({
+  if (isFirstPlay.value) isFirstPlay.value = false;
+  isDataLoading.value = true;
+  sendWebSocketRequest({
     type: SongType.NEXT,
     uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
@@ -168,7 +160,7 @@ const sendNextSignal = () => {
 };
 
 const sendQueueSizeSignal = () => {
-  sendSignal({
+  sendWebSocketRequest({
     type: SongType.OTHER,
     uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
@@ -177,11 +169,11 @@ const sendQueueSizeSignal = () => {
     isStreamerOnly: null,
     remove: null,
     isDisabled: null,
-  })
-}
+  });
+};
 
 const sendPersonalSizeSignal = () => {
-  sendSignal({
+  sendWebSocketRequest({
     type: SongType.OTHER,
     uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
@@ -190,11 +182,11 @@ const sendPersonalSizeSignal = () => {
     isStreamerOnly: null,
     remove: null,
     isDisabled: null,
-  })
-}
+  });
+};
 
 const sendStreamerOnlySignal = () => {
-  sendSignal({
+  sendWebSocketRequest({
     type: SongType.OTHER,
     uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
@@ -203,11 +195,11 @@ const sendStreamerOnlySignal = () => {
     isStreamerOnly: streamerOnly.value,
     remove: null,
     isDisabled: null,
-  })
-}
+  });
+};
 
 const sendRemoveSignal = (id: number, url: string) => {
-  sendSignal({
+  sendWebSocketRequest({
     type: SongType.REMOVE,
     uid: streamer?.value?.at(0)?.uid ?? "",
     url,
@@ -216,11 +208,11 @@ const sendRemoveSignal = (id: number, url: string) => {
     isStreamerOnly: null,
     remove: id,
     isDisabled: null,
-  })
-}
+  });
+};
 
 const sendDisabledSignal = () => {
-  sendSignal({
+  sendWebSocketRequest({
     type: SongType.OTHER,
     uid: streamer?.value?.at(0)?.uid ?? "",
     url: null,
@@ -229,38 +221,12 @@ const sendDisabledSignal = () => {
     isStreamerOnly: null,
     remove: null,
     isDisabled: isDisabled.value,
-  })
-}
+  });
+};
 
-const sendSignal = (r: ISongRequest) => {
-  // 메시지를 전송하는 함수
-  if (WSStatus.value === 'OPEN') {
-    send(JSON.stringify(r));
-  } else {
-    // 재시도 로직 시작
-    let retries = 0;
-    const message = JSON.stringify(r);
-
-    const retrySend = async () => {
-      while (retries < maxRetries) {
-        await wait(100); // 100ms 대기
-
-        if (WSStatus.value === 'OPEN') {
-          send(message); // 메시지 전송
-          console.log("Message sent successfully.");
-          return; // 메시지 전송 후 함수를 종료
-        }
-
-        retries++;
-      }
-
-      // 재시도 후 실패 시 에러 메시지 표시
-      console.error(`Failed to send message after ${maxRetries} attempts.`);
-      alert("Unable to send the message. WebSocket is still not open.");
-    };
-
-    retrySend(); // 재시도 함수 호출
-  }
+const sendWebSocketRequest = async (request: ISongRequest) => {
+  await awaitWebSocketConnection();
+  send(JSON.stringify(request));
 };
 
 const readyEvent = async (event: YT.PlayerEvent) => event.target.playVideo();
@@ -275,11 +241,12 @@ const stateChanged = async (event: YT.OnStateChangeEvent, _target: YT.Player) =>
 const getSongList = async (uid: string) => {
   try {
     if (uid) {
-      const { current: cur, next } = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
+      const response = await useRequestFetch()(`${config.public.backend_url}/songs/${uid}`, {
         method: 'GET',
         credentials: 'include'
       }) as ISongResponse;
-      if (next) list.value = next;
+      const { current: cur, next } = response;
+      if (next) songQueue.value = next;
       if (cur && !current.value) current.value = cur;
       open();
       status.value = Status.DONE;
@@ -287,7 +254,7 @@ const getSongList = async (uid: string) => {
       status.value = Status.REQUIRE_LOGIN;
     }
   } catch (e) {
-    console.error(`Error found! ${e ?? ""}`);
+    console.error(`Error found! ${e}`);
     status.value = Status.ERROR;
   }
 };
@@ -296,7 +263,7 @@ onBeforeUnmount(() => close());
 
 watch(streamer, async (_newValue, _oldValue) => {
   console.log(streamer?.value?.at(0)?.uid);
-  if (currentUser.value > 0) {
+  if (currentUserId.value > 0) {
     status.value = Status.DONE;
     return;
   }
@@ -304,12 +271,10 @@ watch(streamer, async (_newValue, _oldValue) => {
     queueSize.value = streamer?.value?.at(0)?.maxQueueSize ?? 50;
     personalSize.value = streamer?.value?.at(0)?.maxUserSize ?? 5;
     streamerOnly.value = streamer?.value?.at(0)?.isStreamerOnly ?? false;
-
     useSeoMeta({
       title: `nabot :: Music manager :: ${streamer?.value?.at(0)?.nickname ?? "??"}`,
       robots: false,
     });
-
     await getSongList(streamer?.value?.at(0)?.uid ?? "");
   } catch (e) {
     console.error(e);
@@ -326,9 +291,9 @@ watch(streamer, async (_newValue, _oldValue) => {
       <div class="loader" />
     </div>
     <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
-      <LoginBox url="https://nabot.mori.space/administrator/songlist" />
+      <LoginBox :url="`${config.public.frontend_url}/administrator/songlist`" />
     </div>
-    <div v-else-if="currentUser > 0" class="page-overlay">
+    <div v-else-if="currentUserId > 0" class="page-overlay">
       <div class="box">
         <div class="content">
           <p>치수 플레이리스트 기능은 본인만 접속이 가능합니다.</p>
@@ -349,10 +314,10 @@ watch(streamer, async (_newValue, _oldValue) => {
                 <div class="field-body">
                   <div class="field has-addons">
                     <div class="control">
-                      <input v-model="music" class="input" type="url" placeholder="https://youtube.com/watch?v=" >
+                      <input v-model="newSongUrl" class="input" type="url" placeholder="https://youtube.com/watch?v=" >
                     </div>
                     <div class="control">
-                      <button type="button" class="button" :disabled="!music || WSStatus != 'OPEN'" @click="addMusic">신청하기</button>
+                      <button type="button" class="button" :disabled="!newSongUrl || webSocketStatus != 'OPEN'" @click="addMusic">신청하기</button>
                     </div>
                   </div>
                 </div>
@@ -367,7 +332,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <input v-model="queueSize" class="input" type="number" placeholder="노래목록 크기">
                     </div>
                     <div class="control">
-                      <button type="button" class="button" :disabled="!queueSize || WSStatus != 'OPEN'" @click="sendQueueSizeSignal">저장</button>
+                      <button type="button" class="button" :disabled="!queueSize || webSocketStatus != 'OPEN'" @click="sendQueueSizeSignal">저장</button>
                     </div>
                   </div>
                 </div>
@@ -382,7 +347,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <input v-model="personalSize" class="input" type="number" placeholder="개인 신청제한">
                     </div>
                     <div class="control">
-                      <button type="button" class="button" :disabled="!personalSize || WSStatus != 'OPEN'" @click="sendPersonalSizeSignal">저장</button>
+                      <button type="button" class="button" :disabled="!personalSize || webSocketStatus != 'OPEN'" @click="sendPersonalSizeSignal">저장</button>
                     </div>
                   </div>
                 </div>
@@ -394,7 +359,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                 <div class="field-body">
                   <div class="field">
                     <div class="control">
-                      <input v-model="streamerOnly" type="checkbox" :disabled="WSStatus != 'OPEN'" @click="sendStreamerOnlySignal">
+                      <input v-model="streamerOnly" type="checkbox" :disabled="webSocketStatus != 'OPEN'" @click="sendStreamerOnlySignal">
                       활성화시 매니저 이상 신청가능
                     </div>
                   </div>
@@ -407,7 +372,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                 <div class="field-body">
                   <div class="field">
                     <div class="control">
-                      <input v-model="isDisabled" type="checkbox" :disabled="WSStatus != 'OPEN'" @click="sendDisabledSignal">
+                      <input v-model="isDisabled" type="checkbox" :disabled="webSocketStatus != 'OPEN'" @click="sendDisabledSignal">
                       신청곡 기능을 비활성화 합니다.
                     </div>
                   </div>
@@ -434,7 +399,7 @@ watch(streamer, async (_newValue, _oldValue) => {
                   <div class="field has-addons">
                     <div class="control">
                       <input
-                          :value="`https://nabot.mori.space/songwidget/${streamer?.at(0)?.uid ?? ''}`"
+                          :value="`${config.public.frontend_url}/songwidget/${streamer?.at(0)?.uid ?? ''}`"
                           disabled
                           class="input"
                           type="url"
@@ -444,18 +409,18 @@ watch(streamer, async (_newValue, _oldValue) => {
                       <button
                           type="button"
                           class="button is-info"
-                          @click="copyText(`https://nabot.mori.space/songwidget/${streamer?.at(0)?.uid ?? ''}`)"
+                          @click="copyText(`${config.public.frontend_url}/songwidget/${streamer?.at(0)?.uid ?? ''}`)"
                       >복사하기</button>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="field is-grouped is-grouped-right">
-                <div v-if="isFirst" class="control">
-                  <button class="button is-success" type="button" :disabled="WSStatus != 'OPEN'" @click="sendNextSignal">노래시작</button>
+                <div v-if="isFirstPlay" class="control">
+                  <button class="button is-success" type="button" :disabled="webSocketStatus != 'OPEN'" @click="sendNextSignal">노래시작</button>
                 </div>
                 <div v-else class="control">
-                  <button class="button is-success" type="button" :disabled="WSStatus != 'OPEN'" @click="sendNextSignal">다음노래</button>
+                  <button class="button is-success" type="button" :disabled="webSocketStatus != 'OPEN'" @click="sendNextSignal">다음노래</button>
                 </div>
                 <div class="control">
                   <button class="button is-warning" type="button" @click="getSongList(streamer?.at(0)?.uid ?? '')">노래목록 강제 갱신</button>
@@ -490,8 +455,8 @@ watch(streamer, async (_newValue, _oldValue) => {
           <td style="width: 6em;">삭제하기</td>
         </tr>
         </thead>
-        <tbody v-if="list.length > 0">
-        <tr v-for="(song, key) in list" :key="`song_${key}`">
+        <tbody v-if="songQueue.length > 0">
+        <tr v-for="(song, key) in songQueue" :key="`song_${key}`">
           <td>{{ key + 1 }}</td>
           <td>{{ song.name }}</td>
           <td>{{ song.author }}</td>

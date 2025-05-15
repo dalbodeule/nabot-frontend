@@ -19,7 +19,7 @@ const uid = route.params.uid as string
 const config = useRuntimeConfig()
 
 useSeoMeta({
-  title: "Nabot :: Command",
+  title: "Chibot :: Command",
   robots: false
 })
 

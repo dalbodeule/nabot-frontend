@@ -43,7 +43,7 @@ const getProfile = (value: IChzzkStreamer | undefined) => {
   streamer.value = value
 
   useSeoMeta({
-    title: `nabot :: Playlist :: ${streamer.value?.nickname ?? "??"}`,
+    title: `Chibot :: Playlist :: ${streamer.value?.nickname ?? "??"}`,
     robots: false,
   })
 }
@@ -62,8 +62,9 @@ const getSongList = async() => {
   }
 }
 
-const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
-  autoReconnect: false,
+const { close, open } = useWebSocket(`wss://${config.public.backend_url.replace("https://", "")}/song/${uid}`, {
+  autoReconnect: true,
+  immediate: false,
   heartbeat: {
     message: "ping",
     interval: _PING_TIME,
@@ -73,10 +74,6 @@ const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   },
   onDisconnected(_ws) {
     console.log("WebSocket disconnected.")
-    setTimeout(async() => {
-      await getSongList()
-      open()
-    }, 500);
   },
   onError(_ws, event) {
     console.error("WebSocket error: ", event)
@@ -122,13 +119,12 @@ const { close, open } = useWebSocket(`wss://api-nabot.mori.space/song/${uid}`, {
   }
 })
 
-;(async() => {
-  await getSongList()
-  open()
-})()
 
 onBeforeUnmount(() => close())
-
+onMounted(async () => {
+  await getSongList()
+  open()
+})
 
 </script>
 

@@ -27,7 +27,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: "Nabot :: administrator :: 기본설정",
+  title: "Chibot :: administrator :: 기본설정",
   robots: false
 })
 
@@ -72,7 +72,7 @@ watchEffect(async () => {
       <div class="loader" />
     </div>
     <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
-      <LoginBox url="https://nabot.mori.space/administrator/songlist" />
+      <LoginBox :url="`${config.public.frontend_url}/administrator/songlist`" />
     </div>
     <div v-else-if="currentUser > 0" class="page-overlay">
       <div class="box">

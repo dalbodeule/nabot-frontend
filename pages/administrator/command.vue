@@ -24,7 +24,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: "Nabot :: administrator :: Command",
+  title: "Chibot :: administrator :: Command",
   robots: false
 })
 

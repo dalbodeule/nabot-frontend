@@ -58,7 +58,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: "Nabot :: administrator :: Discord",
+  title: "Chibot :: administrator :: Discord",
   robots: false
 })
 
@@ -135,7 +135,7 @@ watchEffect(async () => {
               <div class="media-content">
                 <p>로그인 버튼을 누른 뒤, 원하는 디스코드 서버를 선택해주세요!</p>
                 <a
-                    :href="`${config.public.backend_url}/auth/login/discord?redirectUrl=https://nabot.mori.space/administrator/discord`"
+                    :href="`${config.public.backend_url}/auth/login/discord?redirectUrl=${config.public.frontend_url}/administrator/discord`"
                     target="_self"
                     class="button"
                     style="color: #ffffff; background-color: #5865F2;"
@@ -267,7 +267,7 @@ watchEffect(async () => {
 
       <p>만약 원하는 서버가 안보이신다면, 디스코드 계정이 서버 주인인지, 봇이 초대되어 있는지 확인해주세요!</p>
       <a
-          :href="`${config.public.backend_url}/auth/login/discord?redirectUrl=https://nabot.mori.space/administrator/discord`"
+          :href="`${config.public.backend_url}/auth/login/discord?redirectUrl=${config.public.frontend_url}/administrator/discord`"
           target="_self"
           class="button"
           style="color: #ffffff; background-color: #5865F2;"

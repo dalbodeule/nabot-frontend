@@ -1,9 +1,10 @@
-name = "nabot-frontend"
+name = "chibot-frontend"
 main = ".output/server/index.mjs"
 workers_dev = true
 compatibility_date = "2025-04-24"
 assets = { directory = "./.output/public/", binding = "ASSETS" }
 
 [vars]
-NUXT_PUBLIC_BACKEND_URL = "https://api-nabot.mori.space"
+NUXT_PUBLIC_BACKEND_URL = "https://api-chibot.mori.space"
+NUXT_PUBLIC_FRONTEND_URL = "https://chibot.mori.space"
 
