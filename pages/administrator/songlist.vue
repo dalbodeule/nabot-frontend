@@ -53,16 +53,16 @@ const {
     message: "ping",
     interval: _PING_TIME,
   },
-  onConnected: (ws) => {
+  onConnected: (_ws) => {
     console.log("WebSocket connected.");
   },
-  onDisconnected(ws) {
+  onDisconnected(_ws) {
     console.log("WebSocket disconnected.");
   },
-  onError(ws, event) {
+  onError(_ws, event) {
     console.error("WebSocket error: ", event);
   },
-  async onMessage(ws, wsMessage) {
+  async onMessage(_ws, wsMessage) {
     if (wsMessage.data === "pong") return;
 
     const message = JSON.parse(wsMessage.data) as ISongResponseWS;
