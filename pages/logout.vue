@@ -1,13 +1,13 @@
 <script setup lang="ts">
-const router = useRouter()
-const config = useRuntimeConfig()
+const router = useRouter();
+const config = useRuntimeConfig();
 
-;(async() => {
+(async () => {
   await useRequestFetch()(`${config.public.backend_url}/auth/logout`, {
-    method: 'GET',
-    credentials: 'include'
-  })
+    method: "GET",
+    credentials: "include",
+  });
 
-  await router.push('/')
-})()
+  await router.push("/");
+})();
 </script>

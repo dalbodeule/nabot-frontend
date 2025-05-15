@@ -1,73 +1,73 @@
 <script setup lang="ts">
-import type {Ref} from "vue";
-import {Status} from "assets/enums";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
+import type { Ref } from "vue";
+import { Status } from "assets/enums";
+// import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 
 definePageMeta({
-  layout: 'administrator'
-})
+  layout: "administrator",
+});
 
 export interface IUserSettingsDTO {
-  isBotDisabled: boolean,
-  isBotMsgDisabled: boolean
+  isBotDisabled: boolean;
+  isBotMsgDisabled: boolean;
 }
 
-const status: Ref<Status> = ref(Status.LOADING)
+const status: Ref<Status> = ref(Status.LOADING);
 const options: Ref<IUserSettingsDTO> = ref({
   isBotDisabled: false,
-  isBotMsgDisabled: false
-})
+  isBotMsgDisabled: false,
+});
 
-const config = useRuntimeConfig()
-const _user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
-const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))
+const config = useRuntimeConfig();
+// const _user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
+const currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
 
 definePageMeta({
-  layout: 'administrator'
-})
+  layout: "administrator",
+});
 
 useSeoMeta({
   title: "Chibot :: administrator :: 기본설정",
-  robots: false
-})
+  robots: false,
+});
 
-const getSettings = async() => {
+const getSettings = async () => {
   try {
     options.value = await useRequestFetch()(`${config.public.backend_url}/settings`, {
-      method: 'GET',
-      credentials: 'include'
-    })
-  } catch(e) {
-    console.error(e)
-    status.value = Status.REQUIRE_LOGIN
+      method: "GET",
+      credentials: "include",
+    });
+  } catch (e) {
+    console.error(e);
+    status.value = Status.REQUIRE_LOGIN;
   }
-}
+};
 
-const setSettings = async() => {
+const setSettings = async () => {
   try {
-    status.value = Status.LOADING
+    status.value = Status.LOADING;
 
     await useRequestFetch()(`${config.public.backend_url}/settings`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify(options.value)
-    })
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(options.value),
+    });
 
-    status.value = Status.DONE
-  } catch(e) {
-    console.log(e)
-    status.value = Status.ERROR
+    status.value = Status.DONE;
+  } catch (e) {
+    console.log(e);
+    status.value = Status.ERROR;
   }
-}
+};
 
 watchEffect(async () => {
-  await getSettings()
-  status.value = Status.DONE
-})
+  await getSettings();
+  status.value = Status.DONE;
+});
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%;">
+  <div style="width: 100%; height: 100%">
     <div v-if="status == Status.LOADING" class="page-overlay">
       <div class="loader" />
     </div>
@@ -118,6 +118,4 @@ watchEffect(async () => {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -1,72 +1,73 @@
 <script setup lang="ts">
+import type { Ref } from "vue";
+import { Status, TimerType } from "assets/enums";
+import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 
-import type {Ref} from "vue";
-import {Status, TimerType} from "assets/enums";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
+const timerOptions: { [key: number]: string } = { 0: "업타임", 2: "삭제" }; // 실제 옵션에 맞게 수정
+const options: Ref<TimerType> = ref(TimerType.REMOVE);
+const status: Ref<Status> = ref(Status.LOADING);
 
-definePageMeta({
-  layout: 'administrator'
-})
-
-const timerOptions: {[key: number]: string} = {0: "업타임", 2: "삭제"}; // 실제 옵션에 맞게 수정
-const options: Ref<TimerType> = ref(TimerType.REMOVE)
-const status: Ref<Status> = ref(Status.LOADING)
-
-const config = useRuntimeConfig()
-const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
-const currentUser: Ref<number> = inject("CURRENT_USER", ref(0))
+const config = useRuntimeConfig();
+const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
+const currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
 
 definePageMeta({
-  layout: 'administrator'
-})
+  layout: "administrator",
+});
 
 useSeoMeta({
   title: "Chibot :: administrator :: Timer",
-  robots: false
-})
+  robots: false,
+});
 
-const getTimer = async() => {
+const getTimer = async () => {
   try {
-    const response = await useRequestFetch()(`${config.public.backend_url}/timerapi/${user?.value?.at(currentUser.value)?.uid}`, {
-      method: 'GET',
-      credentials: 'include'
-    }) as { option: number }
+    const response = (await useRequestFetch()(
+      `${config.public.backend_url}/timerapi/${user?.value?.at(currentUser.value)?.uid}`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
+    )) as { option: number };
 
-    options.value = response.option
-  } catch(e) {
-    console.error(e)
-    status.value = Status.REQUIRE_LOGIN
+    options.value = response.option;
+  } catch (e) {
+    console.error(e);
+    status.value = Status.REQUIRE_LOGIN;
   }
-}
+};
 
-const setTimer = async() => {
+const setTimer = async () => {
   try {
-    status.value = Status.LOADING
+    status.value = Status.LOADING;
 
-    await useRequestFetch()(`${config.public.backend_url}/timerapi/${user?.value?.at(currentUser.value)?.uid}`, {
-      method: 'PUT',
-      credentials: 'include',
-      body: JSON.stringify({ option: options.value })
-    })
+    await useRequestFetch()(
+      `${config.public.backend_url}/timerapi/${user?.value?.at(currentUser.value)?.uid}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify({ option: options.value }),
+      },
+    );
 
-    status.value = Status.DONE
-  } catch(e) {
-    console.log(e)
-    status.value = Status.ERROR
+    status.value = Status.DONE;
+  } catch (e) {
+    console.log(e);
+    status.value = Status.ERROR;
   }
-}
+};
 
 watchEffect(async () => {
-  console.log(user?.value?.uid)
-  await getTimer()
-  status.value = Status.DONE
-})
+  console.log(user?.value?.uid);
+  await getTimer();
+  status.value = Status.DONE;
+});
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%;">
+  <div style="width: 100%; height: 100%">
     <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loading"/>
+      <div class="loading" />
     </div>
     <div class="content">
       <h1 class="title">타이머 설정</h1>
@@ -98,18 +99,24 @@ watchEffect(async () => {
           <div class="field has-addons">
             <div class="control">
               <input
-                  :value="`${config.public.frontend_url}/timer/${streamer?.at(currentUser)?.uid ?? ''}`"
-                  disabled
-                  class="input is-fullwidth"
-                  type="url"
-              >
+                :value="`${config.public.frontend_url}/timer/${streamer?.at(currentUser)?.uid ?? ''}`"
+                disabled
+                class="input is-fullwidth"
+                type="url"
+              />
             </div>
             <div class="control">
               <button
-                  type="button"
-                  class="button is-info"
-                  @click="copyText(`${config.public.frontend_url}/timer/${streamer?.at(currentUser)?.uid ?? ''}`)"
-              >복사하기</button>
+                type="button"
+                class="button is-info"
+                @click="
+                  copyText(
+                    `${config.public.frontend_url}/timer/${streamer?.at(currentUser)?.uid ?? ''}`,
+                  )
+                "
+              >
+                복사하기
+              </button>
             </div>
           </div>
         </div>
@@ -118,6 +125,4 @@ watchEffect(async () => {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

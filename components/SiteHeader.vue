@@ -1,26 +1,31 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
-import type {IChzzkSession} from "~/components/ChzzkProfileWithButtons.vue";
+import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 
-const show: Ref<boolean> = ref(false)
-const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined))
+const show: Ref<boolean> = ref(false);
+const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
 
-const config = useRuntimeConfig()
-
+const config = useRuntimeConfig();
 </script>
 
 <template>
   <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <NuxtLink class="navbar-item" to="/">
-        <img src="~/public/favicon.png" alt="">&nbsp; 치봇
+        <img src="~/public/favicon.png" alt="" />&nbsp; 치봇
       </NuxtLink>
     </div>
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="show = !show">
-      <span aria-hidden="true"/>
-      <span aria-hidden="true"/>
-      <span aria-hidden="true"/>
-      <span aria-hidden="true"/>
+    <a
+      role="button"
+      class="navbar-burger"
+      aria-label="menu"
+      aria-expanded="false"
+      @click="show = !show"
+    >
+      <span aria-hidden="true" />
+      <span aria-hidden="true" />
+      <span aria-hidden="true" />
+      <span aria-hidden="true" />
     </a>
     <div class="navbar-menu" :class="show ? 'is-active' : ''">
       <div class="navbar-start">
@@ -32,11 +37,11 @@ const config = useRuntimeConfig()
           class="button is-align-self-center navbar-item"
           :href="`${config.public.backend_url}/auth/login`"
           target="_self"
-          style="color: #ffffff; background-color: #000000;"
-      >
-        <img src="@/public/naver-logo.png" style="height: 20px;" alt="">
-         치지직 아이디로 로그인
-      </a>
+          style="color: #ffffff; background-color: #000000"
+        >
+          <img src="@/public/naver-logo.png" style="height: 20px" alt="" />
+          치지직 아이디로 로그인
+        </a>
       </div>
       <div v-else class="navbar-end">
         <NuxtLink class="navbar-item" to="/logout">로그아웃</NuxtLink>
