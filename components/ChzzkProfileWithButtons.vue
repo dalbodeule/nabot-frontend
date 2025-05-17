@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import "bulma/bulma.scss";
 import type { IChzzkStreamer } from "@/assets/tools";
 
 export interface IChzzkSession extends IChzzkStreamer {
@@ -18,35 +17,34 @@ const emit = defineEmits<{
 
 <template>
   <div
-    class="card"
+    class="mb-4 card"
     :class="{
-      'has-background-primary': profile.isStreamOn,
-      'has-background-info': !profile.isStreamOn,
+      'bg-primary': profile.isStreamOn,
+      'bg-info': !profile.isStreamOn,
     }"
-    style="margin-bottom: 1em"
   >
-    <div class="card-content">
-      <div class="media">
-        <div class="media-left">
-          <figure class="image is-48x48">
-            <img :src="profile.avatarUrl" :alt="`${profile.nickname}'s Avatar`" />
+    <div class="p-4">
+      <div class="flex">
+        <div class="mr-4">
+          <figure class="w-12 h-12">
+            <img
+              :src="profile.avatarUrl"
+              :alt="`${profile.nickname}'s Avatar`"
+              class="rounded-full"
+            />
           </figure>
         </div>
-        <div
-          class="media-content"
-          style="display: flex; justify-content: space-between; align-items: center"
-        >
-          <p class="title is-4">{{ profile.nickname }}</p>
+        <div class="flex flex-1 items-center justify-between">
+          <p class="text-2xl font-bold">{{ profile.nickname }}</p>
           <a
-            class="subtitle is-6"
+            class="text-sm"
             :href="`https://chzzk.naver.com/live/${profile.uid}`"
             target="_blank"
             >치지직 바로가기</a
           >
           <button
-            class="button is-warning"
+            class="ml-auto px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
             type="button"
-            style="margin-left: auto"
             @click="emit('selected', idx)"
           >
             유저 선택

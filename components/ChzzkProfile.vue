@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import "bulma/bulma.scss";
 import { getChzzkUser, type IChzzkStreamer } from "@/assets/tools";
 
 const props = defineProps<{ uid: string }>();
@@ -22,22 +21,28 @@ const config = useRuntimeConfig();
 <template>
   <div
     v-if="streamer"
-    class="card"
+    class="rounded-lg shadow-md p-4"
     :class="{
-      'has-background-primary': streamer.isStreamOn,
-      'has-background-info': !streamer.isStreamOn,
+      'bg-green-500': streamer.isStreamOn,
+      'bg-blue-500': !streamer.isStreamOn,
     }"
   >
-    <div class="card-content">
-      <div class="media">
-        <div class="media-left">
-          <figure class="image is-48x48">
-            <img :src="streamer.avatarUrl" :alt="`${streamer.nickname}'s Avatar`" />
+    <div class="p-4">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <figure class="w-12 h-12">
+            <img
+              class="rounded-full"
+              :src="streamer.avatarUrl"
+              :alt="`${streamer.nickname}'s Avatar`"
+            />
           </figure>
         </div>
-        <div class="media-content">
-          <p class="title is-4">{{ streamer.nickname }}</p>
-          <a class="subtitle is-6" :href="`https://chzzk.naver.com/live/${streamer.uid}`"
+        <div class="ml-4">
+          <p class="text-xl font-bold">{{ streamer.nickname }}</p>
+          <a
+            class="text-sm text-gray-100 hover:text-gray-200"
+            :href="`https://chzzk.naver.com/live/${streamer.uid}`"
             >치지직 바로가기</a
           >
         </div>

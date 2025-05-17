@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { inject, type Ref } from "vue";
-import ChzzkProfileWithButtons, {
-  type IChzzkSession,
-} from "~/components/ChzzkProfileWithButtons.vue";
+import { getUser, getCurrentUser } from "assets/tools";
 
 definePageMeta({
   layout: "administrator",
@@ -12,23 +9,25 @@ useSeoMeta({
   robots: false,
 });
 
-const users: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
-const currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
+const users = getUser();
+const currentUser = getCurrentUser();
 </script>
 
 <template>
-  <div class="content">
-    <h1>관리할 유저를 선택해주세요.</h1>
-    <div v-for="(value, idx) in users" :key="`user-${idx}`">
-      <ChzzkProfileWithButtons
-        :profile="value"
-        :idx="idx"
-        @selected="
-          (selected) => {
-            currentUser = selected;
-          }
-        "
-      />
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">관리할 유저를 선택해주세요.</h1>
+    <div class="space-y-4">
+      <div v-for="(value, idx) in users" :key="`user-${idx}`">
+        <ChzzkProfileWithButtons
+          :profile="value"
+          :idx="idx"
+          @selected="
+            (selected) => {
+              currentUser = selected;
+            }
+          "
+        />
+      </div>
     </div>
   </div>
 </template>

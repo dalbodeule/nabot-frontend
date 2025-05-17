@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
 import { Status } from "assets/enums";
-// import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
+import { getCurrentUser, getLoading, getUser } from "assets/tools";
 
 export interface IUserSettingsDTO {
   isBotDisabled: boolean;
   isBotMsgDisabled: boolean;
 }
 
-const status: Ref<Status> = ref(Status.LOADING);
+const status = getLoading();
 const options: Ref<IUserSettingsDTO> = ref({
   isBotDisabled: false,
   isBotMsgDisabled: false,
 });
 
 const config = useRuntimeConfig();
-// const _user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
-const currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
+const user = getUser();
+const currentUser = getCurrentUser();
 
 definePageMeta({
   layout: "administrator",
@@ -57,6 +57,7 @@ const setSettings = async () => {
 };
 
 watchEffect(async () => {
+  console.log(`${user.value?.at(currentUser.value)?.uid}`);
   await getSettings();
   status.value = Status.DONE;
 });
@@ -64,10 +65,7 @@ watchEffect(async () => {
 
 <template>
   <div style="width: 100%; height: 100%">
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loader" />
-    </div>
-    <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
+    <div v-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
       <LoginBox :url="`${config.public.frontend_url}/administrator/songlist`" />
     </div>
     <div v-else-if="currentUser > 0" class="page-overlay">

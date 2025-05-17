@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
 import { Status } from "assets/enums";
-import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { getGuildBannerUrl, getGuildIconUrl } from "assets/tools";
+import {
+  getCurrentUser,
+  getGuildBannerUrl,
+  getGuildIconUrl,
+  getLoading,
+  getUser,
+} from "assets/tools";
 
 export interface IGuildChannel {
   id: string;
@@ -41,12 +46,12 @@ const selectGuild: Ref<IGuildSettings> = ref({
 });
 const selectGuildIdx = ref(0);
 
-const status: Ref<Status> = ref(Status.LOADING);
+const status = getLoading();
 const isActive = ref(false);
 
 const config = useRuntimeConfig();
-const user: Ref<IChzzkSession | undefined> = inject("USER", ref(undefined));
-const currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
+const user = getUser();
+const currentUser = getCurrentUser();
 
 definePageMeta({
   layout: "administrator",
@@ -68,7 +73,7 @@ const getDiscordStatus = async () => {
     );
 
     selectGuild.value = (await useRequestFetch()(
-      `${config.public.backend_url}/discord/${user?.value?.at(currentUser.value)?.uid}`,
+      `${config.public.backend_url}/discord/${user?.value?.[currentUser.value].uid}`,
       {
         method: "GET",
         credentials: "include",
@@ -105,11 +110,14 @@ const addMention = (mention: { id: string; name: string }) => {
 const submit = async () => {
   status.value = Status.LOADING;
   try {
-    await useRequestFetch()(`${config.public.backend_url}/discord/${user?.value?.uid}`, {
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify(selectGuild.value),
-    });
+    await useRequestFetch()(
+      `${config.public.backend_url}/discord/${user?.value?.[currentUser.value].uid}`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(selectGuild.value),
+      },
+    );
     status.value = Status.DONE;
   } catch (e) {
     console.error(e.status, e.data);
@@ -118,7 +126,7 @@ const submit = async () => {
 };
 
 watchEffect(async () => {
-  console.log(user?.value?.uid);
+  console.log(user?.value?.[currentUser.value].uid);
 
   await getDiscordStatus();
 });
@@ -126,14 +134,11 @@ watchEffect(async () => {
 
 <template>
   <div style="width: 100%; height: 100%">
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loading" />
-    </div>
-    <div v-else-if="status == Status.REQUIRE_DISCORD" class="page-overlay">
-      <div class="box">
-        <div class="card-content">
-          <div class="media">
-            <div class="media-content">
+    <div v-if="status == Status.REQUIRE_DISCORD" class="page-overlay">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="p-4">
+          <div class="flex">
+            <div class="flex-grow">
               <p>로그인 버튼을 누른 뒤, 원하는 디스코드 서버를 선택해주세요!</p>
               <a
                 :href="`${config.public.backend_url}/auth/login/discord?redirectUrl=${config.public.frontend_url}/administrator/discord`"
@@ -150,17 +155,24 @@ watchEffect(async () => {
     </div>
     <div class="content">
       <h1>디스코드 설정</h1>
-      <div class="dropdown" :class="{ 'is-active': isActive }">
-        <div class="dropdown-trigger">
-          <button class="button" type="button" @click="isActive = !isActive">
+      <div class="relative inline-block text-left" :class="{ 'z-50': isActive }">
+        <div>
+          <button
+            class="px-4 py-2 rounded-md bg-white border border-gray-300 hover:bg-gray-50"
+            type="button"
+            @click="isActive = !isActive"
+          >
             <span>서버를 선택해주세요.</span>
             <span class="icon is-small">
               <FontAwesomeIcon :icon="['fas', 'caret-down']" />
             </span>
           </button>
         </div>
-        <div class="dropdown-menu" role="menu">
-          <div class="dropdown-content">
+        <div
+          class="absolute mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+          role="menu"
+        >
+          <div class="py-1">
             <a
               v-for="(value, idx) in guilds"
               :key="`discord-${idx}`"
@@ -220,15 +232,18 @@ watchEffect(async () => {
         </figure>
         <!-- Channel Dropdown -->
         <form @submit.prevent="submit">
-          <div class="field is-horizontal">
-            <div class="field-label is-normal">
-              <label class="label">디스코드 채널</label>
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-1/4">
+              <label class="block text-sm font-medium text-gray-700">디스코드 채널</label>
             </div>
-            <div class="field-body">
+            <div class="w-3/4">
               <div class="field">
                 <div class="control">
-                  <div class="select is-fullwidth">
-                    <select v-model="selectGuild.channelId">
+                  <div class="w-full">
+                    <select
+                      v-model="selectGuild.channelId"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    >
                       <option disabled value="">채널을 선택하세요</option>
                       <option
                         v-for="channel in guilds[selectGuildIdx]?.channel"
@@ -251,7 +266,10 @@ watchEffect(async () => {
             <div class="field-body">
               <div class="field">
                 <div class="control">
-                  <textarea v-model="selectGuild.message" class="textarea" />
+                  <textarea
+                    v-model="selectGuild.message"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  />
                 </div>
               </div>
             </div>
@@ -262,12 +280,12 @@ watchEffect(async () => {
               <label class="label">역할 맨션하기</label>
             </div>
             <div class="field-body">
-              <div class="buttons">
+              <div class="flex flex-wrap gap-2">
                 <button
                   v-for="(role, idx) in guilds[selectGuildIdx]?.roles"
                   :key="`role-${idx}`"
                   :style="{ 'background-color': `#${role.color.toString(16)}` }"
-                  class="button is-light"
+                  class="px-3 py-1 rounded-md text-white hover:opacity-90"
                   type="button"
                   @click="addMention({ id: role.id, name: role.name })"
                 >
@@ -303,29 +321,11 @@ watchEffect(async () => {
 </template>
 
 <style scoped>
-.dropdown-guild {
-  display: flex;
-  align-items: center;
-}
-
 .guild-icon {
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.guild-banner {
-  margin-top: 5px;
+  @apply rounded-full;
 }
 
 .banner-image {
-  border-radius: 5px;
-}
-
-.dropdown-item {
-  padding: 10px;
-}
-
-.dropdown-item:hover {
-  background-color: #f5f5f5;
+  @apply rounded-md;
 }
 </style>

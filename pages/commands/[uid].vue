@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import "@/assets/loading.scss";
 import type { Ref } from "vue";
 import { Status } from "assets/enums";
-import { defaultCommands } from "assets/tools";
+import { defaultCommands, getLoading } from "assets/tools";
 
 export interface ICommandType {
   label: string;
@@ -12,7 +11,7 @@ export interface ICommandType {
 }
 
 const commands: Ref<ICommandType[]> = ref([]);
-const status: Ref<Status> = ref(Status.LOADING);
+const status = getLoading();
 const route = useRoute();
 const uid = route.params.uid as string;
 
@@ -22,7 +21,8 @@ useSeoMeta({
   title: "Chibot :: Command",
   robots: false,
 });
-(async () => {
+
+onMounted(async () => {
   try {
     const response = (await useRequestFetch()(
       `${config.public.backend_url}/commands/${uid}`,
@@ -41,29 +41,40 @@ useSeoMeta({
     console.error(e);
     status.value = Status.ERROR;
   }
-})();
+});
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%">
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loading" />
-    </div>
-    <div class="content">
+  <div class="w-full h-full">
+    <div class="p-6">
       <ChzzkProfile :uid="uid" />
 
       <h2>기본 명령어</h2>
-      <div v-for="(command, index) in defaultCommands" :key="`def-${index}`" class="box">
-        <div class="field">
-          <label class="label">명령어 이름</label>
-          <div class="control">
-            <input v-model="command.label" class="input" type="text" disabled />
+      <div
+        v-for="(command, index) in defaultCommands"
+        :key="`def-${index}`"
+        class="p-4 mb-4 bg-white rounded-lg shadow"
+      >
+        <div class="mb-4">
+          <label class="block text-gray-700 font-bold mb-2">명령어 이름</label>
+          <div>
+            <input
+              v-model="command.label"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-100"
+              type="text"
+              disabled
+            />
           </div>
         </div>
-        <div class="field">
-          <label class="label">명령어 내용</label>
-          <div class="control">
-            <input v-model="command.content" type="text" class="input" disabled />
+        <div class="mb-4">
+          <label class="block text-gray-700 font-bold mb-2">명령어 내용</label>
+          <div>
+            <input
+              v-model="command.content"
+              type="text"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-100"
+              disabled
+            />
           </div>
         </div>
       </div>
@@ -71,17 +82,31 @@ useSeoMeta({
       <h2>스트리머 명령어</h2>
 
       <!-- 명령어 목록 -->
-      <div v-for="(command, index) in commands" :key="index" class="box">
-        <div class="field">
-          <label class="label">명령어 이름</label>
-          <div class="control">
-            <input v-model="command.label" class="input" type="text" disabled />
+      <div
+        v-for="(command, index) in commands"
+        :key="index"
+        class="p-4 mb-4 bg-white rounded-lg shadow"
+      >
+        <div class="mb-4">
+          <label class="block text-gray-700 font-bold mb-2">명령어 이름</label>
+          <div>
+            <input
+              v-model="command.label"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-100"
+              type="text"
+              disabled
+            />
           </div>
         </div>
-        <div class="field">
-          <label class="label">명령어 내용</label>
-          <div class="control">
-            <input v-model="command.content" type="text" class="input" disabled />
+        <div class="mb-4">
+          <label class="block text-gray-700 font-bold mb-2">명령어 내용</label>
+          <div>
+            <input
+              v-model="command.content"
+              type="text"
+              class="w-full px-3 py-2 border rounded-lg bg-gray-100"
+              disabled
+            />
           </div>
         </div>
       </div>

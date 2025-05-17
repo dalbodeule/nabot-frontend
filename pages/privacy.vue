@@ -10,7 +10,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="box content">
+  <div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
     <h1>개인정보처리방침</h1>
     <h3>제1조(목적)</h3>
 
@@ -365,5 +365,23 @@ useSeoMeta({
     <p>제1조 본 방침은 2024.08.08.부터 시행됩니다.</p>
   </div>
 </template>
+
+<style scoped>
+h1 {
+  @apply text-3xl font-bold mb-6;
+}
+
+h3 {
+  @apply text-xl font-semibold mb-4;
+}
+
+p {
+  @apply text-gray-700 leading-relaxed mb-4;
+}
+
+br {
+  @apply hidden;
+}
+</style>
 
 <style scoped></style>

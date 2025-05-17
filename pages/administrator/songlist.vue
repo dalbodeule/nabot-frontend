@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { onBeforeUnmount, type Ref, watch, nextTick } from "vue";
-import "@/assets/loading.scss";
 import { SongType, Status } from "assets/enums";
 import {
   _PING_TIME,
   formatSeconds,
   getChzzkUser,
+  getCurrentUser,
+  getLoading,
+  getUser,
   getYoutubeVideoId,
   wait,
 } from "@/assets/tools";
 import type { ISong, ISongResponse, ISongResponseWS } from "~/pages/songs/[uid].vue";
-import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 import YouTube from "vue3-youtube";
 
 export interface ISongRequest {
@@ -25,9 +26,10 @@ export interface ISongRequest {
 }
 
 const config = useRuntimeConfig();
-const status: Ref<Status> = ref(Status.LOADING);
-const streamer: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
-const currentUserId: Ref<number> = inject("CURRENT_USER", ref(0));
+const status = getLoading();
+const streamer = getUser();
+const currentUserId = getCurrentUser();
+
 const songQueue: Ref<ISong[]> = ref([]);
 const { copy: copyText } = useClipboard();
 const autoPlay: Ref<boolean> = ref(true);
@@ -305,50 +307,46 @@ watch(
 
 <template>
   <div>
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loader" />
-    </div>
-    <div v-else-if="status == Status.REQUIRE_LOGIN" class="page-overlay">
+    <div
+      v-if="status == Status.REQUIRE_LOGIN"
+      class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
+    >
       <LoginBox :url="`${config.public.frontend_url}/administrator/songlist`" />
     </div>
     <div v-else-if="currentUserId > 0" class="page-overlay">
-      <div class="box">
-        <div class="content">
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="prose">
           <p>치수 플레이리스트 기능은 본인만 접속이 가능합니다.</p>
           <NuxtLink to="/administrator" class="button is-primary">돌아가기</NuxtLink>
         </div>
       </div>
     </div>
     <div>
-      <div class="fixed-grid">
-        <div class="grid">
-          <div class="cell">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="w-full">
             <ChzzkProfile :uid="streamer?.at(0)?.uid ?? ''" />
             <div class="box">
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">노래 신청</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">노래 신청</label>
                 </div>
-                <div class="field-body">
-                  <div class="field has-addons">
-                    <div class="control">
-                      <input
-                        v-model="newSongUrl"
-                        class="input"
-                        type="url"
-                        placeholder="https://youtube.com/watch?v="
-                      />
-                    </div>
-                    <div class="control">
-                      <button
-                        type="button"
-                        class="button"
-                        :disabled="!newSongUrl || webSocketStatus != 'OPEN'"
-                        @click="addMusic"
-                      >
-                        신청하기
-                      </button>
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex">
+                    <input
+                      v-model="newSongUrl"
+                      class="flex-1 px-3 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      type="url"
+                      placeholder="https://youtube.com/watch?v="
+                    />
+                    <button
+                      type="button"
+                      class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      :disabled="!newSongUrl || webSocketStatus != 'OPEN'"
+                      @click="addMusic"
+                    >
+                      신청하기
+                    </button>
                   </div>
                 </div>
               </div>
@@ -406,110 +404,106 @@ watch(
                   </div>
                 </div>
               </div>
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">신청제한</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">신청제한</label>
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control">
-                      <input
-                        v-model="streamerOnly"
-                        type="checkbox"
-                        :disabled="webSocketStatus != 'OPEN'"
-                        @click="sendStreamerOnlySignal"
-                      />
-                      활성화시 매니저 이상 신청가능
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex items-center">
+                    <input
+                      v-model="streamerOnly"
+                      type="checkbox"
+                      class="form-checkbox h-5 w-5 text-blue-600"
+                      :disabled="webSocketStatus != 'OPEN'"
+                      @click="sendStreamerOnlySignal"
+                    />
+                    <span class="ml-2">활성화시 매니저 이상 신청가능</span>
                   </div>
                 </div>
               </div>
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">기능 비활성화</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">기능 비활성화</label>
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control">
-                      <input
-                        v-model="isDisabled"
-                        type="checkbox"
-                        :disabled="webSocketStatus != 'OPEN'"
-                        @click="sendDisabledSignal"
-                      />
-                      신청곡 기능을 비활성화 합니다.
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex items-center">
+                    <input
+                      v-model="isDisabled"
+                      type="checkbox"
+                      class="form-checkbox h-5 w-5 text-blue-600"
+                      :disabled="webSocketStatus != 'OPEN'"
+                      @click="sendDisabledSignal"
+                    />
+                    <span class="ml-2">신청곡 기능을 비활성화 합니다.</span>
                   </div>
                 </div>
               </div>
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">자동재생</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">자동재생</label>
                 </div>
-                <div class="field-body">
-                  <div class="field">
-                    <div class="control">
-                      <input v-model="autoPlay" type="checkbox" />
-                      매번 리셋되는 값입니다. 확인 필수!
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex items-center">
+                    <input
+                      v-model="autoPlay"
+                      type="checkbox"
+                      class="form-checkbox h-5 w-5 text-blue-600"
+                    />
+                    <span class="ml-2">매번 리셋되는 값입니다. 확인 필수!</span>
                   </div>
                 </div>
               </div>
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">노래 위젯</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">노래 위젯</label>
                 </div>
-                <div class="field-body">
-                  <div class="field has-addons">
-                    <div class="control">
-                      <input
-                        :value="`${config.public.frontend_url}/songwidget/${streamer?.at(0)?.uid ?? ''}`"
-                        disabled
-                        class="input"
-                        type="url"
-                      />
-                    </div>
-                    <div class="control">
-                      <button
-                        type="button"
-                        class="button is-info"
-                        @click="
-                          copyText(
-                            `${config.public.frontend_url}/songwidget/${streamer?.at(0)?.uid ?? ''}`,
-                          )
-                        "
-                      >
-                        복사하기
-                      </button>
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex">
+                    <input
+                      :value="`${config.public.frontend_url}/songwidget/${streamer?.at(0)?.uid ?? ''}`"
+                      disabled
+                      class="flex-1 px-3 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      type="url"
+                    />
+                    <button
+                      type="button"
+                      class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600"
+                      @click="
+                        copyText(
+                          `${config.public.frontend_url}/songwidget/${streamer?.at(0)?.uid ?? ''}`,
+                        )
+                      "
+                    >
+                      복사하기
+                    </button>
                   </div>
                 </div>
               </div>
-              <div class="field is-grouped is-grouped-right">
-                <div v-if="isFirstPlay" class="control">
+              <div class="flex justify-end space-x-2">
+                <div v-if="isFirstPlay">
                   <button
-                    class="button is-success"
                     type="button"
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     :disabled="webSocketStatus != 'OPEN'"
                     @click="sendNextSignal"
                   >
                     노래시작
                   </button>
                 </div>
-                <div v-else class="control">
+                <div v-else>
                   <button
-                    class="button is-success"
                     type="button"
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     :disabled="webSocketStatus != 'OPEN'"
                     @click="sendNextSignal"
                   >
                     다음노래
                   </button>
                 </div>
-                <div class="control">
+                <div>
                   <button
-                    class="button is-warning"
                     type="button"
+                    class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                     @click="getSongList(streamer?.at(0)?.uid ?? '')"
                   >
                     노래목록 강제 갱신
@@ -534,7 +528,7 @@ watch(
       </div>
     </div>
     <div class="box">
-      <table class="table is-fullwidth">
+      <table class="min-w-full divide-y divide-gray-200">
         <thead>
           <tr>
             <td>ID</td>

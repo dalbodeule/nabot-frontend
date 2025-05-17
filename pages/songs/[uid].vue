@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onBeforeUnmount, type Ref } from "vue";
-import "@/assets/loading.scss";
 import { SongType, Status } from "assets/enums";
 import {
   _PING_TIME,
   formatSeconds,
   getChzzkUser,
+  getLoading,
   type IChzzkStreamer,
 } from "@/assets/tools";
 
@@ -31,15 +31,11 @@ export interface ISongResponseWS {
   delUrl: string | null;
 }
 
-definePageMeta({
-  layout: "transparent",
-});
-
 const route = useRoute();
 const uid = route.params.uid as string;
 const config = useRuntimeConfig();
 
-const status: Ref<Status> = ref(Status.LOADING);
+const status = getLoading();
 const streamer: Ref<IChzzkStreamer | undefined> = ref(undefined);
 const list: Ref<ISong[]> = ref([]);
 const current: Ref<ISong | undefined> = ref();
@@ -141,40 +137,37 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%">
-    <SiteHeader />
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loader" />
-    </div>
-    <div class="box">
-      <ChzzkProfile :uid="uid" @profile="getProfile" />
-      <table class="table is-fullwidth">
-        <thead>
-          <tr>
-            <td>ID</td>
-            <td style="width: 50em">노래이름</td>
-            <td style="width: 10em">업로더</td>
-            <td style="width: 20em">신청자</td>
-            <td style="width: 8em">시간</td>
-          </tr>
-        </thead>
-        <tbody v-if="list.length > 0">
-          <tr v-for="(song, key) in list" :key="`song_${key}`">
-            <td>{{ key + 1 }}</td>
-            <td>{{ song.name }}</td>
-            <td>{{ song.author }}</td>
-            <td>{{ song.reqName }}</td>
-            <td>{{ formatSeconds(song.length) }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="5" style="text-align: center">신청된 노래가 없습니다.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <SiteFooter />
+  <div class="p-6 bg-white rounded-lg shadow">
+    <ChzzkProfile :uid="uid" @profile="getProfile" />
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="border-b">
+          <td class="p-2">ID</td>
+          <td class="p-2 w-[50%]">노래이름</td>
+          <td class="p-2 w-[15%]">업로더</td>
+          <td class="p-2 w-[25%]">신청자</td>
+          <td class="p-2 w-[10%]">시간</td>
+        </tr>
+      </thead>
+      <tbody v-if="list.length > 0">
+        <tr
+          v-for="(song, key) in list"
+          :key="`song_${key}`"
+          class="border-b hover:bg-gray-50"
+        >
+          <td class="p-2">{{ key + 1 }}</td>
+          <td class="p-2">{{ song.name }}</td>
+          <td class="p-2">{{ song.author }}</td>
+          <td class="p-2">{{ song.reqName }}</td>
+          <td class="p-2">{{ formatSeconds(song.length) }}</td>
+        </tr>
+      </tbody>
+      <tbody v-else>
+        <tr>
+          <td colspan="5" class="text-center p-4">신청된 노래가 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 

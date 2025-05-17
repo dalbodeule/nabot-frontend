@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, type Ref } from "vue";
-import "@/assets/loading.scss";
-import "@/assets/billboard.scss";
 import { SongType, Status } from "assets/enums";
-import { _PING_TIME, getChzzkUser } from "@/assets/tools";
+import { _PING_TIME, getChzzkUser, getLoading } from "@/assets/tools";
 import type { ISong, ISongResponse, ISongResponseWS } from "~/pages/songs/[uid].vue";
 
 const route = useRoute();
@@ -11,7 +9,7 @@ const uid = route.params.uid as string;
 
 const config = useRuntimeConfig();
 
-const status: Ref<Status> = ref(Status.LOADING);
+const status = getLoading();
 const list: Ref<ISong[]> = ref([]);
 const current: Ref<ISong | undefined> = ref(undefined);
 
@@ -115,14 +113,15 @@ onBeforeUnmount(() => close());
 </script>
 
 <template>
-  <div>
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loader" />
-    </div>
-    <div class="billboard">
-      <div id="currentSong" class="song">
+  <div class="flex justify-center items-center min-h-screen font-mono">
+    <div
+      class="w-[800px] h-[200px] flex flex-col items-center justify-center overflow-hidden bg-black text-white border-[5px] border-white p-[10px] box-border"
+    >
+      <div class="w-full h-[3em] overflow-hidden text-2xl text-center relative">
         <span
-          >지금 노래:
+          class="absolute whitespace-nowrap w-full h-full top-[2vh] left-full animate-[marquee_20s_linear_infinite]"
+        >
+          지금 노래:
           {{
             current?.url
               ? `${current?.name} - ${current?.author}`
@@ -130,18 +129,29 @@ onBeforeUnmount(() => close());
           }}
         </span>
       </div>
-      <div id="nextSong" class="song">
+      <div class="w-full h-[3em] overflow-hidden text-2xl text-center relative">
         <span
-          >다음 노래:
+          class="absolute whitespace-nowrap w-full h-full top-[2vh] left-full animate-[marquee_20s_linear_infinite]"
+        >
+          다음 노래:
           {{
             list?.at(0)?.url
               ? `${list?.at(0)?.name} - ${list?.at(0)?.author}`
               : "노래 정보가 없습니다."
-          }}</span
-        >
+          }}
+        </span>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped></style>
+<style>
+@keyframes marquee {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -140%;
+  }
+}
+</style>

@@ -1,25 +1,24 @@
 <script setup lang="ts">
-import type { Ref } from "vue";
-import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 import { Status } from "assets/enums";
 import ChzzkProfile from "~/components/ChzzkProfile.vue";
+import { getLoading, getUser } from "assets/tools";
 
-const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
-// const _currentUser: Ref<number> = inject("CURRENT_USER", ref(0));
-const status: Ref<Status> = ref(Status.LOADING);
+const user = getUser();
+const status = getLoading();
 const config = useRuntimeConfig();
 
 useSeoMeta({
   title: "Chibot :: Main",
   description: "Chibot :: smart chzzk bot.",
 });
-(async () => {
+
+onMounted(async () => {
   try {
     status.value = Status.DONE;
   } catch (e) {
     console.error("error", e);
   }
-})();
+});
 </script>
 
 <template>
@@ -38,7 +37,7 @@ useSeoMeta({
           </div>
           <div class="cell">
             <template v-if="user">
-              <ChzzkProfile :uid="user?.at(0)?.uid" />
+              <ChzzkProfile :uid="user?.at(0)?.uid ?? ''" />
             </template>
             <template v-else>
               <LoginBox :url="config.public.frontend_url" />

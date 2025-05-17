@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import "@/assets/loading.scss";
 import type { Ref } from "vue";
-import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 import { Status } from "assets/enums";
-import { defaultCommands } from "assets/tools";
+import { defaultCommands, getCurrentUser, getUser } from "assets/tools";
 
 export interface ICommandType {
   label: string;
@@ -16,8 +14,8 @@ const commands: Ref<ICommandType[]> = ref([]);
 const status: Ref<Status> = ref(Status.LOADING);
 
 const config = useRuntimeConfig();
-const user: Ref<IChzzkSession[] | undefined> = inject("USER", ref(undefined));
-const currentUser: Ref<number | undefined> = inject("CURRENT_USER", ref(0));
+const user = getUser();
+const currentUser = getCurrentUser();
 
 definePageMeta({
   layout: "administrator",
@@ -135,17 +133,23 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%">
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loading" />
-    </div>
-    <div class="content">
+  <div class="w-full h-full">
+    <div class="p-4">
       <h2>기본 명령어</h2>
-      <div v-for="(command, index) in defaultCommands" :key="`def-${index}`" class="box">
-        <div class="field">
-          <label class="label">명령어 이름</label>
-          <div class="control">
-            <input v-model="command.label" class="input" type="text" disabled />
+      <div
+        v-for="(command, index) in defaultCommands"
+        :key="`def-${index}`"
+        class="p-6 mb-4 bg-white rounded shadow"
+      >
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">명령어 이름</label>
+          <div>
+            <input
+              v-model="command.label"
+              class="w-full px-3 py-2 border rounded disabled:bg-gray-100"
+              type="text"
+              disabled
+            />
           </div>
         </div>
         <div class="field">
@@ -293,9 +297,19 @@ watchEffect(async () => {
       </div>
 
       <!-- 명령어 추가 버튼 (맨 아래) -->
-      <div class="buttons is-right">
-        <button class="button is-primary" @click="addCommand">명령어 추가</button>
-        <button class="button is-info" @click="getCommand">목록 다시받기</button>
+      <div class="flex justify-end gap-2 mb-4">
+        <button
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          @click="addCommand"
+        >
+          명령어 추가
+        </button>
+        <button
+          class="px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
+          @click="getCommand"
+        >
+          목록 다시받기
+        </button>
       </div>
     </div>
   </div>
@@ -303,29 +317,15 @@ watchEffect(async () => {
 
 <style lang="scss" scoped>
 .tooltip-wrapper {
-  position: relative;
-  display: inline-block;
+  @apply relative inline-block;
 
   .tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 5px 10px;
-    border-radius: 5px;
-    white-space: nowrap;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 1;
+    @apply absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-center py-1 px-2 rounded
+    whitespace-nowrap invisible opacity-0 transition-opacity duration-300 z-10;
   }
 
   &:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
+    @apply visible opacity-100;
   }
 }
 </style>

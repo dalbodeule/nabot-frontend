@@ -2,12 +2,12 @@
 const router = useRouter();
 const config = useRuntimeConfig();
 
-(async () => {
+onMounted(async () => {
   await useRequestFetch()(`${config.public.backend_url}/auth/logout`, {
     method: "GET",
     credentials: "include",
   });
 
   await router.push("/");
-})();
+});
 </script>

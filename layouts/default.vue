@@ -1,12 +1,9 @@
 <script lang="ts" setup>
-import "bulma/bulma.scss";
-import "bulma/sass/themes/light.scss";
-
-import "@/assets/loading.scss";
 import type { Ref } from "vue";
 import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
 import { getSessionUser } from "assets/tools";
 import { Status } from "assets/enums";
+import LoadingBox from "~/components/LoadingBox.vue";
 
 const config = useRuntimeConfig();
 
@@ -16,7 +13,9 @@ const status: Ref<Status> = ref(Status.LOADING);
 
 provide("USER", user);
 provide("CURRENT_USER", currentUser);
-(async () => {
+provide("STATUS", status);
+
+onMounted(async () => {
   try {
     status.value = Status.LOADING;
     user.value = await getSessionUser(config.public.backend_url);
@@ -28,27 +27,17 @@ provide("CURRENT_USER", currentUser);
       status.value = Status.ERROR;
     }
   }
-})();
-
-provide("USER", user);
-
-useHead({
-  htmlAttrs: {
-    class: "theme-light",
-  },
 });
 </script>
 <template>
-  <div style="width: 100%; height: 100%">
-    <div v-if="status == Status.LOADING" class="page-overlay">
-      <div class="loading" />
-    </div>
+  <div class="w-full h-full">
     <div>
       <SiteHeader />
-      <div class="container" style="margin-top: 20px; min-height: 80vh">
+      <div class="container mx-auto mt-5 min-h-[80vh]">
         <NuxtPage />
       </div>
       <SiteFooter />
+      <LoadingBox />
     </div>
   </div>
 </template>

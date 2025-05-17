@@ -9,43 +9,54 @@ const config = useRuntimeConfig();
 </script>
 
 <template>
-  <nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <NuxtLink class="navbar-item" to="/">
-        <img src="~/public/favicon.png" alt="" />&nbsp; 치봇
+  <nav
+    class="flex items-center justify-between flex-wrap bg-white p-4"
+    role="navigation"
+    aria-label="main navigation"
+  >
+    <div class="flex items-center flex-shrink-0 mr-6">
+      <NuxtLink class="flex items-center" to="/">
+        <img src="~/public/favicon.png" class="mr-2 !max-w-[20px]" alt="" /> 치봇
       </NuxtLink>
     </div>
-    <a
-      role="button"
-      class="navbar-burger"
+    <button
+      class="block lg:hidden px-2 py-1"
       aria-label="menu"
       aria-expanded="false"
       @click="show = !show"
     >
-      <span aria-hidden="true" />
-      <span aria-hidden="true" />
-      <span aria-hidden="true" />
-      <span aria-hidden="true" />
-    </a>
-    <div class="navbar-menu" :class="show ? 'is-active' : ''">
-      <div class="navbar-start">
-        <a class="navbar-item" href="/privacy" target="_blank">개인정보 처리방침</a>
-        <a class="navbar-item" href="/policy" target="_blank">이용약관</a>
+      <span class="block w-6 h-0.5 bg-black mb-1"></span>
+      <span class="block w-6 h-0.5 bg-black mb-1"></span>
+      <span class="block w-6 h-0.5 bg-black mb-1"></span>
+      <span class="block w-6 h-0.5 bg-black"></span>
+    </button>
+    <div
+      class="w-full flex-grow lg:flex lg:items-center lg:w-auto"
+      :class="show ? 'block' : 'hidden'"
+    >
+      <div class="text-sm">
+        <a class="px-4 py-2 hover:text-gray-600" href="/privacy" target="_blank"
+          >개인정보 처리방침</a
+        >
+        <a class="px-4 py-2 hover:text-gray-600" href="/policy" target="_blank"
+          >이용약관</a
+        >
       </div>
-      <div v-if="user == undefined" class="navbar-end">
+      <div v-if="user == undefined" class="flex items-center">
         <a
-          class="button is-align-self-center navbar-item"
+          class="flex items-center px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           :href="`${config.public.backend_url}/auth/login`"
           target="_self"
-          style="color: #ffffff; background-color: #000000"
         >
-          <img src="@/public/naver-logo.png" style="height: 20px" alt="" />
+          <img src="@/public/naver-logo.png" class="h-5 mr-2" alt="" />
           치지직 아이디로 로그인
         </a>
       </div>
-      <div v-else class="navbar-end">
-        <NuxtLink class="navbar-item" to="/logout">로그아웃</NuxtLink>
-        <NuxtLink class="navbar-item" to="/administrator">봇 관리</NuxtLink>
+      <div v-else class="flex items-center space-x-4">
+        <NuxtLink class="px-4 py-2 hover:text-gray-600" to="/logout">로그아웃</NuxtLink>
+        <NuxtLink class="px-4 py-2 hover:text-gray-600" to="/administrator"
+          >봇 관리</NuxtLink
+        >
       </div>
     </div>
   </nav>

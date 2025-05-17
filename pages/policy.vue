@@ -10,12 +10,14 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="box content">
-    <h1>서비스 이용약관 (상품, 서비스 등 이용 일반 회원용)</h1>
+  <div class="p-6 bg-white rounded-lg shadow-md prose max-w-none">
+    <h1 class="text-3xl font-bold mb-8">
+      서비스 이용약관 (상품, 서비스 등 이용 일반 회원용)
+    </h1>
     <br />
     <br />
     <br />
-    <h3>제1조(목적)</h3>
+    <h3 class="text-xl font-semibold mb-4">제1조(목적)</h3>
 
     <p>
       본 약관은 치봇가 운영하는 온라인 쇼핑몰 '치봇'에서 제공하는 서비스(이하 '서비스'라
@@ -255,9 +257,7 @@ useSeoMeta({
       대금을 지불한 경우 대금을 받은 날 부터 3 영업일 이내에 환급하거나 이에 필요한 조치를
       취합니다.
     </p>
-    <br />
-    <br />
-    <br />
+    <div class="my-12"></div>
 
     <h3>제15조(청약철회)</h3>
 
@@ -285,7 +285,7 @@ useSeoMeta({
 
     <h3>제16조(청약철회의 효과)</h3>
 
-    <p>
+    <p class="mb-4 text-gray-700">
       '회사'는 '구매자'로부터 재화 등을 반환 받은 경우 3영업일 이내에 이미 지급받은 재화
       등의 대금을 환급합니다. 이때 '회사'가 '구매자'에게 재화등의 환급을 지연한 때에는 그
       지연기간에 대하여 전자상거래법 시행령 제21조의3 소정의 이율(연 15%)을 곱하여 산정한
@@ -309,7 +309,7 @@ useSeoMeta({
       '회사'는 '구매자'의 정보수집시 다음의 필수사항 등 구매계약 이행에 필요한 최소한의
       정보만을 수집합니다.
     </p>
-    <ul>
+    <ul class="list-disc pl-6 mb-4 text-gray-700">
       <li>성명</li>
       <li>주민등록번호 또는 외국인등록번호</li>
       <li>주소</li>
@@ -410,7 +410,7 @@ useSeoMeta({
     <br />
     <br />
 
-    <h1>부 칙</h1>
+    <h1 class="text-2xl font-bold mb-6">부 칙</h1>
 
     <h3>제1조(시행일)</h3>
 
@@ -418,4 +418,20 @@ useSeoMeta({
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+h1 {
+  @apply text-3xl font-bold mb-6;
+}
+
+h3 {
+  @apply text-xl font-semibold mb-4;
+}
+
+p {
+  @apply text-gray-700 leading-relaxed mb-4;
+}
+
+br {
+  @apply hidden;
+}
+</style>

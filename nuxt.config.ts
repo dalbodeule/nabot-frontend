@@ -23,9 +23,11 @@ export default defineNuxtConfig({
       autoSubfolderIndex: false,
     },
   },
-  css: ["@fortawesome/fontawesome-svg-core/styles.css", "@/assets/default.scss"],
-  purgecss: {
-    safelist: [/svg.*/, /fa.*/],
-  },
-  modules: ["@vueuse/nuxt", "nuxt-purgecss", "@nuxt/eslint", "@nuxt/scripts"],
+  css: ["@fortawesome/fontawesome-svg-core/styles.css", "@/assets/tailwindcss.scss"],
+  modules: [
+    "@vueuse/nuxt",
+    "@nuxt/eslint",
+    "@nuxt/scripts",
+    "@nuxtjs/tailwindcss",
+  ],
 });

@@ -1,4 +1,6 @@
 import type { IChzzkSession } from "~/components/ChzzkProfileWithButtons.vue";
+import type { Ref } from "vue";
+import { Status } from "assets/enums";
 
 export function formatSeconds(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
@@ -60,3 +62,9 @@ export const defaultCommands: { label: string; content: string }[] = [
 ];
 
 export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const getLoading = (defaultValue: Status = Status.LOADING): Ref<Status> =>
+  inject("STATUS", ref(defaultValue));
+export const getUser = (): Ref<IChzzkSession[] | undefined> =>
+  inject("USER", ref(undefined));
+export const getCurrentUser = (): Ref<number> => inject("CURRENT_USER", ref(0));

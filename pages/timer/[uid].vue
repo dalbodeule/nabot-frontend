@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import "@/assets/flip-clock.scss";
-import "@/assets/loading.scss";
 import { onBeforeUnmount, type Ref } from "vue";
 import FlipClock from "~/components/FlipClock.vue";
 import dayjs from "dayjs";
