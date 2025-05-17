@@ -306,7 +306,7 @@ watch(
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col w-full gap-[40px]">
     <div
       v-if="status == Status.REQUIRE_LOGIN"
       class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
@@ -317,14 +317,19 @@ watch(
       <div class="bg-white p-6 rounded-lg shadow-lg">
         <div class="prose">
           <p>치수 플레이리스트 기능은 본인만 접속이 가능합니다.</p>
-          <NuxtLink to="/administrator" class="button is-primary">돌아가기</NuxtLink>
+          <NuxtLink
+            to="/administrator"
+            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 inline-block"
+          >
+            돌아가기
+          </NuxtLink>
         </div>
       </div>
     </div>
-    <div>
+    <div class="w-full">
       <div class="container mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="w-full">
+          <div class="w-full flex-col gap-[20px]">
             <ChzzkProfile :uid="streamer?.at(0)?.uid ?? ''" />
             <div class="box">
               <div class="flex items-center mb-4">
@@ -350,57 +355,49 @@ watch(
                   </div>
                 </div>
               </div>
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">노래목록 크기</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">노래목록 크기</label>
                 </div>
-                <div class="field-body">
-                  <div class="field has-addons">
-                    <div class="control">
-                      <input
-                        v-model="queueSize"
-                        class="input"
-                        type="number"
-                        placeholder="노래목록 크기"
-                      />
-                    </div>
-                    <div class="control">
-                      <button
-                        type="button"
-                        class="button"
-                        :disabled="!queueSize || webSocketStatus != 'OPEN'"
-                        @click="sendQueueSizeSignal"
-                      >
-                        저장
-                      </button>
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex">
+                    <input
+                      v-model="queueSize"
+                      class="flex-1 px-3 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      type="number"
+                      placeholder="노래목록 크기"
+                    />
+                    <button
+                      type="button"
+                      class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      :disabled="!queueSize || webSocketStatus != 'OPEN'"
+                      @click="sendQueueSizeSignal"
+                    >
+                      저장
+                    </button>
                   </div>
                 </div>
               </div>
-              <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                  <label class="label">개인 신청제한</label>
+              <div class="flex items-center mb-4">
+                <div class="w-1/4">
+                  <label class="block text-gray-700 font-bold">개인 신청제한</label>
                 </div>
-                <div class="field-body">
-                  <div class="field has-addons">
-                    <div class="control">
-                      <input
-                        v-model="personalSize"
-                        class="input"
-                        type="number"
-                        placeholder="개인 신청제한"
-                      />
-                    </div>
-                    <div class="control">
-                      <button
-                        type="button"
-                        class="button"
-                        :disabled="!personalSize || webSocketStatus != 'OPEN'"
-                        @click="sendPersonalSizeSignal"
-                      >
-                        저장
-                      </button>
-                    </div>
+                <div class="w-3/4">
+                  <div class="flex">
+                    <input
+                      v-model="personalSize"
+                      class="flex-1 px-3 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      type="number"
+                      placeholder="개인 신청제한"
+                    />
+                    <button
+                      type="button"
+                      class="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      :disabled="!personalSize || webSocketStatus != 'OPEN'"
+                      @click="sendPersonalSizeSignal"
+                    >
+                      저장
+                    </button>
                   </div>
                 </div>
               </div>
@@ -512,54 +509,81 @@ watch(
               </div>
             </div>
           </div>
-          <div class="cell">
-            <div class="box">
-              <YouTube
-                v-if="showPlayer"
-                :key="youtubeId"
-                :src="`https://www.youtube.com/watch?v=${youtubeId}`"
-                :player-vars="{ autoplay: autoPlay ? 1 : 0 }"
-                @ready="readyEvent"
-                @state-change="stateChanged"
-              />
-            </div>
+          <div class="box w-full h-full">
+            <YouTube
+              v-if="showPlayer"
+              :key="youtubeId"
+              :src="`https://www.youtube.com/watch?v=${youtubeId}`"
+              :player-vars="{ autoplay: autoPlay ? 1 : 0 }"
+              class="w-full aspect-video"
+              @ready="readyEvent"
+              @state-change="stateChanged"
+            />
           </div>
         </div>
       </div>
     </div>
-    <div class="box">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead>
+        <thead class="bg-gray-50">
           <tr>
-            <td>ID</td>
-            <td style="width: 50em">노래이름</td>
-            <td style="width: 10em">업로더</td>
-            <td style="width: 15em">신청자</td>
-            <td style="width: 8em">시간</td>
-            <td style="width: 6em">삭제하기</td>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              ID
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[50em]"
+            >
+              노래이름
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10em]"
+            >
+              업로더
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15em]"
+            >
+              신청자
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8em]"
+            >
+              시간
+            </th>
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[6em]"
+            >
+              삭제하기
+            </th>
           </tr>
         </thead>
-        <tbody v-if="songQueue.length > 0">
-          <tr v-for="(song, key) in songQueue" :key="`song_${key}`">
-            <td>{{ key + 1 }}</td>
-            <td>{{ song.name }}</td>
-            <td>{{ song.author }}</td>
-            <td>{{ song.reqName }}</td>
-            <td>{{ formatSeconds(song.length) }}</td>
-            <td>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr
+            v-for="(song, key) in songQueue"
+            :key="`song_${key}`"
+            class="hover:bg-gray-50"
+          >
+            <td class="px-6 py-4 whitespace-nowrap">{{ key + 1 }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ song.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ song.author }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ song.reqName }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ formatSeconds(song.length) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
               <button
                 type="button"
-                class="button is-danger is-small"
+                class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                 @click="sendRemoveSignal(key, song.url)"
               >
                 !
               </button>
             </td>
           </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="5" style="text-align: center">신청된 노래가 없습니다.</td>
+          <tr v-if="!songQueue.length">
+            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+              신청된 노래가 없습니다.
+            </td>
           </tr>
         </tbody>
       </table>

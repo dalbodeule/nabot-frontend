@@ -23,8 +23,8 @@ const config = useRuntimeConfig();
     v-if="streamer"
     class="rounded-lg shadow-md p-4"
     :class="{
-      'bg-green-500': streamer.isStreamOn,
-      'bg-blue-500': !streamer.isStreamOn,
+      'bg-green-300': streamer.isStreamOn,
+      'bg-blue-300': !streamer.isStreamOn,
     }"
   >
     <div class="p-4">

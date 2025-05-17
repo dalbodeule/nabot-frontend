@@ -168,63 +168,66 @@ watchEffect(async () => {
       </div>
 
       <!-- 명령어 목록 -->
-      <div v-for="(command, index) in commands" :key="index" class="box">
-        <div class="field">
-          <label class="label">명령어 이름</label>
-          <div class="control">
+      <div
+        v-for="(command, index) in commands"
+        :key="index"
+        class="p-6 mb-4 bg-white rounded shadow"
+      >
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">명령어 이름</label>
+          <div>
             <input
               v-model="command.label"
-              class="input"
+              class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               type="text"
               placeholder="명령어 이름 입력"
             />
           </div>
         </div>
-        <div class="field">
-          <label class="label">명령어 내용</label>
-          <div class="control">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">명령어 내용</label>
+          <div>
             <input
               v-model="command.content"
               type="text"
-              class="input"
+              class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="명령어 내용 입력"
             />
           </div>
         </div>
-        <div class="field">
-          <label class="label">명령어 실패시 내용</label>
-          <div class="control">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2"
+            >명령어 실패시 내용</label
+          >
+          <div>
             <input
               v-model="command.failContent"
               type="text"
-              class="input"
+              class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="명령어 내용 입력"
             />
           </div>
-          <p class="help is-info">
+          <p class="text-sm text-blue-600 mt-1">
             데일리 카운터에서 이미 사용한 유저가 보게 될 내용입니다.
           </p>
         </div>
-        <div class="field">
-          <label class="label">플레이스홀더 추가</label>
-          <!-- placeholders:
-           <name>
-           <following>
-           <counter:counter_name>
-           <personal_counter:counter_name>
-           <daily_counter:counter_name>
-           <days:yyyy-mm-dd>
-           -->
-          <div class="buttons">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2"
+            >플레이스홀더 추가</label
+          >
+          <div class="flex flex-wrap gap-2">
             <div class="tooltip-wrapper">
-              <button class="button is-light" @click="insertPlaceholder(index, '<name>')">
+              <button
+                class="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
+                @click="insertPlaceholder(index, '<name>')"
+              >
                 유저 이름
               </button>
               <div class="tooltip">이 자리에 유저 이름이 표시됩니다.</div>
             </div>
             <div class="tooltip-wrapper">
               <button
-                class="button is-light"
+                class="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
                 @click="insertPlaceholder(index, '<following>')"
               >
                 팔로우 기간
@@ -233,7 +236,7 @@ watchEffect(async () => {
             </div>
             <div class="tooltip-wrapper">
               <button
-                class="button is-light"
+                class="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
                 @click="insertPlaceholder(index, '<counter:>')"
               >
                 일반 카운터
@@ -244,7 +247,7 @@ watchEffect(async () => {
             </div>
             <div class="tooltip-wrapper">
               <button
-                class="button is-light"
+                class="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
                 @click="insertPlaceholder(index, '<personal_counter:>')"
               >
                 개인 카운터
@@ -256,7 +259,7 @@ watchEffect(async () => {
             </div>
             <div class="tooltip-wrapper">
               <button
-                class="button is-light"
+                class="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
                 @click="insertPlaceholder(index, '<daily_counter:>')"
               >
                 데일리 카운터
@@ -268,7 +271,7 @@ watchEffect(async () => {
             </div>
             <div class="tooltip-wrapper">
               <button
-                class="button is-light"
+                class="px-3 py-2 bg-gray-100 rounded hover:bg-gray-200"
                 @click="insertPlaceholder(index, '<days:yyyy-mm-dd>')"
               >
                 디데이 카운터
@@ -278,21 +281,27 @@ watchEffect(async () => {
               </div>
             </div>
           </div>
-          <p class="help is-info">
+          <p class="text-sm text-blue-600 mt-2">
             일반 카운터, 개인 카운터, 데일리 카운터는 : 뒤에 이름을 적어주세요!
           </p>
-          <p class="help is-info">
+          <p class="text-sm text-blue-600 mt-1">
             디데이 카운터는 yyyy-mm-dd 를 날짜로 바꿔주세요. (예시: 2024-08-10)
           </p>
         </div>
         <!-- 저장 및 삭제 버튼 -->
-        <div class="field is-grouped is-grouped-right">
-          <p class="control">
-            <button class="button is-success" @click="saveCommand(index)">저장</button>
-          </p>
-          <p class="control">
-            <button class="button is-danger" @click="deleteCommand(index)">삭제</button>
-          </p>
+        <div class="flex justify-end gap-2">
+          <button
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            @click="saveCommand(index)"
+          >
+            저장
+          </button>
+          <button
+            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            @click="deleteCommand(index)"
+          >
+            삭제
+          </button>
         </div>
       </div>
 

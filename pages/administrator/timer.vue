@@ -72,7 +72,7 @@ watchEffect(async () => {
       <!-- 타이머 옵션 선택 -->
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2">타이머 옵션 선택</label>
-        <div class="relative">
+        <div class="flex gap-2">
           <select
             v-model="options"
             class="block appearance-none w-full bg-white border border-gray-300 rounded px-4 py-2 pr-8"
@@ -81,22 +81,17 @@ watchEffect(async () => {
               {{ option }}
             </option>
           </select>
+          <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap"
+            @click="setTimer"
+          >
+            저장
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- 저장 버튼 -->
-    <div class="mb-4">
-      <div class="flex">
-        <button
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          @click="setTimer"
-        >
-          저장
-        </button>
-      </div>
-    </div>
-    <div class="content">
+    <div class="p-6">
       <h1 class="text-2xl font-bold mb-6">타이머 위젯 URL</h1>
       <div class="mb-4">
         <div class="flex">
