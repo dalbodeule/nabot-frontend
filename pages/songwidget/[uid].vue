@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, type Ref } from "vue";
-import { SongType, Status } from "assets/enums";
-import { _PING_TIME, getChzzkUser, getLoading } from "@/assets/tools";
-import type { ISong, ISongResponse, ISongResponseWS } from "~/pages/songs/[uid].vue";
+import {onBeforeUnmount, type Ref} from "vue";
+import {SongType, Status} from "assets/enums";
+import {_PING_TIME, getChzzkUser, getLoading} from "@/assets/tools";
+import type {ISong, ISongResponse, ISongResponseWS} from "~/pages/songs/[uid].vue";
 
 const route = useRoute();
 const uid = route.params.uid as string;
@@ -42,28 +42,26 @@ const getSongList = async () => {
 const { close, open } = useWebSocket(
   `wss://${config.public.backend_url.replace("https://", "")}/song/${uid}`,
   {
-    autoReconnect: false,
+    autoReconnect: true,
     heartbeat: {
       message: "ping",
       interval: _PING_TIME,
     },
     onConnected: () => {
       console.log("WebSocket connected.");
+      status.value = Status.DONE
     },
     onDisconnected() {
       console.log("WebSocket disconnected.");
-      setTimeout(async () => {
-        await getSongList();
-        open();
-      }, 500);
+      status.value = Status.LOADING
     },
     onError(_ws, event) {
       console.error("WebSocket error: ", event);
+      status.value = Status.LOADING
     },
     async onMessage(_ws, msg) {
-      if (msg.data == "pong") {
-        return;
-      }
+      if (msg.data === "pong") return;
+
       const message = JSON.parse(msg.data) as ISongResponseWS;
 
       switch (message.type) {
@@ -106,10 +104,10 @@ const { close, open } = useWebSocket(
 );
 
 onBeforeUnmount(() => close());
-(async () => {
+onMounted(async () => {
   await getSongList();
   open();
-})();
+});
 </script>
 
 <template>

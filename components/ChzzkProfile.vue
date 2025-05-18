@@ -40,11 +40,7 @@ const config = useRuntimeConfig();
         </div>
         <div class="ml-4">
           <p class="text-xl font-bold">{{ streamer.nickname }}</p>
-          <a
-            class="text-sm text-gray-100 hover:text-gray-200"
-            :href="`https://chzzk.naver.com/live/${streamer.uid}`"
-            >치지직 바로가기</a
-          >
+          <ChzzkButton :uri="`/live/${streamer.uid}`" content="치지직 바로가기" />
         </div>
       </div>
     </div>

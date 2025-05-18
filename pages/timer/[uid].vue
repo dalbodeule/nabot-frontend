@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onBeforeUnmount, type Ref } from "vue";
+import {onBeforeUnmount, type Ref} from "vue";
 import FlipClock from "~/components/FlipClock.vue";
 import dayjs from "dayjs";
-import { useWebSocket } from "@vueuse/core";
-import { TimerType, TimerMode } from "assets/enums";
+import {useWebSocket} from "@vueuse/core";
+import {Status, TimerMode, TimerType} from "assets/enums";
+import {getLoading} from "assets/tools";
 
 const route = useRoute();
 const config = useRuntimeConfig();
 
 const status: Ref<TimerType> = ref(TimerType.STREAM_OFF);
+const loading = getLoading();
 const flipFlags: Ref<[boolean, boolean][]> = ref([
   [false, false],
   [false, false],
@@ -37,12 +39,15 @@ const { close } = useWebSocket(
     autoReconnect: true,
     onError(ws, event) {
       console.error("WebSocket error: ", event);
+      loading.value = Status.LOADING;
     },
     onConnected() {
       console.log("WebSocket connected.");
+      loading.value = Status.DONE;
     },
     onDisconnected() {
       console.log("WebSocket disconnected.");
+      loading.value = Status.LOADING;
     },
     onMessage(_ws, msg) {
       const message = JSON.parse(msg.data) as { type: TimerType; time: string };
@@ -174,8 +179,8 @@ const startCountDownFromTime = (time: string) => {
     <div v-if="status == TimerType.STREAM_OFF" class="overlay">
       <div class="loader" />
     </div>
-    <div v-else-if="status != TimerType.REMOVE" class="timer">
-      <FlipClock :time="hours" :flip-flags="flipFlags[0]" />
+    <div v-else-if="status != TimerType.REMOVE" class="flex justify-center items-center mt-5 gap-[14px]">
+    <FlipClock :time="hours" :flip-flags="flipFlags[0]" />
       <FlipClock :time="minutes" :flip-flags="flipFlags[1]" />
       <FlipClock :time="seconds" :flip-flags="flipFlags[2]" />
     </div>
@@ -183,10 +188,4 @@ const startCountDownFromTime = (time: string) => {
 </template>
 
 <style lang="scss" scoped>
-.timer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-}
 </style>

@@ -528,27 +528,27 @@ watch(
         <thead class="bg-gray-50">
           <tr>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40px]"
             >
               ID
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[50em]"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[50em]"
             >
               노래이름
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10em]"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20em]"
             >
               업로더
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15em]"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20em]"
             >
               신청자
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8em]"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20em]"
             >
               시간
             </th>
