@@ -2,12 +2,5 @@
 const router = useRouter();
 const config = useRuntimeConfig();
 
-onMounted(async () => {
-  await useRequestFetch()(`${config.public.backend_url}/auth/logout`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  await router.push("/");
-});
+window.location.href = `${config.public.backend_url}/auth/logout`
 </script>
